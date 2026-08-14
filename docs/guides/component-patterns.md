@@ -2,7 +2,7 @@
 
 이 문서는 Next.js 16 + React 19 환경에서 효율적이고 재사용 가능한 컴포넌트 작성 패턴을 제공합니다.
 
-> ⚠️ **실제 프로젝트와의 차이**: 이 문서의 "Client Components" 절은 `useActionState` + Server Actions 조합을 예시로 들지만, 이 저장소의 실제 인증 폼(`components/login-form.tsx`, `sign-up-form.tsx`, `forgot-password-form.tsx`, `update-password-form.tsx`)은 전부 `'use client'` + 순수 `useState` + `onSubmit` 핸들러에서 `lib/supabase/client.ts`의 브라우저 클라이언트를 직접 호출하는 패턴입니다. Server Actions(`'use server'`)는 이 저장소 어디에도 쓰이지 않습니다. 아래 패턴들은 React/Next.js의 일반적인 참고 자료이며, 이 프로젝트에 새 폼을 추가할 때는 기존 폼 파일의 실제 패턴(직접 `useState` 관리)을 따르는 것이 일관성 있습니다.
+> 아래 예시들은 범용 React/Next.js 패턴이며, 이 프로젝트의 실제 컴포넌트(`components/ui/button.tsx` 등)를 그대로 옮긴 것은 아닙니다. 예를 들어 실제 `Button`은 `React.forwardRef`와 `@radix-ui/react-slot`의 `asChild` prop을 함께 사용하지만, 아래 "Props Interface 정의" 예시는 이를 단순화해서 보여줍니다. 컴포넌트를 새로 만들 때는 기존 `components/ui/*.tsx` 파일의 실제 구현을 우선 참고하세요.
 
 ## 🧩 기본 설계 원칙
 
@@ -453,8 +453,10 @@ export function Dashboard() {
 
 ### 3. 가상화 (Virtualization)
 
+`react-window`는 현재 `package.json`에 설치되어 있지 않음 — 사용하려면 `npm install react-window`가 먼저 필요합니다.
+
 ```tsx
-// ✅ 큰 리스트 가상화
+// ⚠️ react-window 설치 필요 (미설치): 큰 리스트 가상화
 import { FixedSizeList as List } from "react-window";
 
 interface VirtualizedListProps {

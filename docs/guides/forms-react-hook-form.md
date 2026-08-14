@@ -1,52 +1,26 @@
-# React Hook Form + Zod + Server Actions 완전 가이드
+# React Hook Form + Zod + Server Actions 완전 가이드 (⚠️ 아직 미도입 — 참고용 패턴 문서)
 
-이 문서는 Next.js 16에서 React Hook Form + Zod + Server Actions를 도입할 경우를 대비한 참고 가이드입니다.
+> **이 문서 전체가 아직 이 프로젝트에 적용되지 않은 아키텍처를 설명합니다.** `react-hook-form`, `@hookform/resolvers`, `zod`는 `package.json`에 없으며(설치 안 됨), `app/actions/`, `components/forms/`, `lib/schemas/`, `lib/types/`, `hooks/` 디렉터리도 실제로는 존재하지 않습니다. 아래 코드 예시가 참조하는 `@/components/ui/form`, `@/components/ui/textarea`, `@/components/ui/select`도 아직 `npx shadcn@latest add`로 추가되지 않은 컴포넌트입니다.
+>
+> 이 프로젝트의 실제 인증 폼(`components/login-form.tsx`, `sign-up-form.tsx` 등)은 Server Actions가 아니라 **Client Component에서 `useState`로 입력값을 관리하고, `lib/supabase/client.ts`의 `createClient()`로 만든 브라우저 클라이언트를 통해 `supabase.auth.signInWithPassword()` 등을 직접 호출**하는 훨씬 단순한 패턴을 씁니다. 새 폼을 추가할 때는 이 문서의 패턴보다 기존 `components/*-form.tsx` 파일들의 실제 코드를 먼저 참고하세요.
+>
+> 아래 내용은 향후 이 프로젝트에 React Hook Form + Zod + Server Actions 조합을 도입하기로 결정했을 때 쓸 수 있는 참고 패턴으로 남겨둡니다. 실제로 적용하려면 먼저 패키지를 설치해야 합니다.
 
-> ⚠️ **현재 이 프로젝트에는 설치되어 있지 않음**: `package.json`을 확인하면 `react-hook-form`, `@hookform/resolvers`, `zod`, `use-debounce`, `react-error-boundary`가 dependencies/devDependencies 어디에도 없습니다. Server Actions(`'use server'`)도 이 저장소 어디에서도 사용되지 않습니다.
->
-> **실제로 이 프로젝트의 인증 폼이 쓰는 패턴**(`components/login-form.tsx`, `sign-up-form.tsx` 등)은 다음과 같이 훨씬 단순합니다:
->
-> ```tsx
-> "use client";
-> import { useState } from "react";
-> import { createClient } from "@/lib/supabase/client";
->
-> export function LoginForm() {
->   const [email, setEmail] = useState("");
->   const [error, setError] = useState<string | null>(null);
->   const [isLoading, setIsLoading] = useState(false);
->
->   const handleLogin = async (e: React.FormEvent) => {
->     e.preventDefault();
->     const supabase = createClient();
->     setIsLoading(true);
->     try {
->       const { error } = await supabase.auth.signInWithPassword({ email, password });
->       if (error) throw error;
->     } catch (error) {
->       setError(error instanceof Error ? error.message : "An error occurred");
->     } finally {
->       setIsLoading(false);
->     }
->   };
->   // ... <form onSubmit={handleLogin}>
-> }
-> ```
->
-> 클라이언트 측 검증(이메일 형식 등)은 `<Input type="email" required>` 같은 HTML5 속성에 의존하고, 서버 측 재검증은 Supabase Auth API 자체가 처리합니다. Zod 스키마나 별도 서버 검증 레이어는 없습니다.
->
-> 아래 내용은 **이 프로젝트에 React Hook Form + Zod + Server Actions를 실제로 도입하기로 결정했을 때** 따를 수 있는 패턴입니다. 도입 전에는 반드시 아래 패키지를 먼저 설치해야 합니다.
+이 문서는 Next.js 16에서 React Hook Form + Zod + Server Actions를 활용한 폼 처리 패턴(도입 시 참고용)을 제공합니다.
 
 ## 🚀 기본 설정 및 셋업
 
 ### 패키지 설치
 
 ```bash
-# 이 프로젝트에 아직 설치되어 있지 않음 — 도입 시 먼저 설치 필요
+# ⚠️ 아래 패키지는 현재 설치되어 있지 않음 — 이 문서의 패턴을 실제로 쓰려면 먼저 설치할 것
 npm install react-hook-form @hookform/resolvers zod
 
-# 고급 기능을 위한 추가 패키지 (선택적, 마찬가지로 미설치 상태)
+# 고급 기능을 위한 추가 패키지 (선택적, 마찬가지로 미설치)
 npm install use-debounce react-error-boundary
+
+# shadcn/ui의 form, textarea, select 컴포넌트도 아직 추가되지 않았음
+npx shadcn@latest add form textarea select
 ```
 
 ### TypeScript 설정 최적화
@@ -1481,10 +1455,9 @@ function SecureForm() {
 
 ## 💡 코드 품질 확인
 
-- [ ] `npx tsc --noEmit` 통과 (전용 `check-all` 스크립트는 없음)
-- [ ] TypeScript 엄격 모드 오류 없음
+- [ ] `npm run type-check` 통과 (TypeScript 엄격 모드 오류 없음)
 - [ ] `npm run lint` 통과
-- [ ] Prettier는 미설치 상태이므로 해당 없음
+- [ ] `npm run format:check` 통과
 - [ ] 불필요한 리렌더링 없음
 - [ ] 메모리 누수 없음 (useEffect cleanup)
 ```

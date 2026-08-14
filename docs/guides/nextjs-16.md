@@ -88,12 +88,12 @@ export default function Page({ params }: { params: { id: string } }) {
 // npx @next/codemod@latest next-async-request-api .
 ```
 
-### Typed Routes 활용 (이 프로젝트에서는 비활성화 상태)
+### Typed Routes 활용 — ⚠️ 이 프로젝트에서는 비활성화 상태
 
-> ⚠️ 이 프로젝트의 `next.config.ts`는 `cacheComponents: true`만 설정되어 있고 `typedRoutes`는 켜져 있지 않습니다. 아래는 활성화할 경우의 사용법이며, 실제로 켜기 전까지는 `<Link href="/존재하지-않는-경로">`도 컴파일 에러 없이 통과합니다.
+`next.config.ts`를 확인하면 `cacheComponents: true`만 설정되어 있고 `typedRoutes`는 켜져 있지 않습니다. 아래 예시는 활성화했을 때의 사용법이며, 이 프로젝트에서 `Link href`의 타입 안전성은 현재 보장되지 않습니다. 켜려면 `next.config.ts`에 직접 추가해야 합니다.
 
 ```typescript
-// typedRoutes를 켤 경우의 사용 예시
+// 🚀 활성화 시: Typed Routes로 타입 안전성 보장
 import Link from 'next/link'
 
 // next.config.ts에서 typedRoutes: true 설정 필요
@@ -247,10 +247,12 @@ export async function updateProduct(id: string, data: ProductData) {
 }
 ```
 
-### Turbopack 설정
+### Turbopack 설정 — 이 프로젝트에서는 미설정(기본값 사용)
+
+이 프로젝트의 `next.config.ts`에는 `turbopack`이나 `experimental.optimizePackageImports` 설정이 없습니다(Turbopack은 Next 16 기본 번들러이므로 별도 옵션 없이도 이미 사용 중입니다). 커스텀 로더나 패키지 import 최적화가 필요해질 때 아래 예시를 참고해 추가하세요.
 
 ```typescript
-// next.config.ts
+// next.config.ts (설정이 필요해질 경우의 예시)
 import type { NextConfig } from "next";
 
 // 🔄 Next.js 16부터 turbopack 옵션은 experimental.turbo가 아니라
@@ -317,38 +319,25 @@ export default function UserForm() {
 
 ### Middleware → Proxy 전환 (Next 16 Breaking Change)
 
-Next.js 16.0.0부터 `middleware.ts`는 `proxy.ts`로 이름이 바뀌었고 함수명도 `middleware` → `proxy`로 변경되었습니다. Node.js 런타임이 기본값입니다(15.2에서 실험적으로 도입, 15.5에서 stable, 16에서 기본값으로 전환). 이 프로젝트에는 아직 `middleware.ts`/`proxy.ts`가 없지만, 추가할 경우 아래 규칙을 따르세요.
+Next.js 16.0.0부터 `middleware.ts`는 `proxy.ts`로 이름이 바뀌었고 함수명도 `middleware` → `proxy`로 변경되었습니다. Node.js 런타임이 기본값입니다(15.2에서 실험적으로 도입, 15.5에서 stable, 16에서 기본값으로 전환).
+
+이 프로젝트는 루트의 `proxy.ts`가 실제 로직을 `lib/supabase/proxy.ts`의 `updateSession()`에 위임하는 구조입니다(두 파일로 분리한 이유는 Supabase 클라이언트 생성 로직을 `lib/supabase/` 아래 다른 클라이언트 팩토리들과 나란히 두기 위함):
 
 ```typescript
-// proxy.ts (기존 middleware.ts를 대체)
-import { NextRequest, NextResponse } from "next/server";
+// proxy.ts (루트)
+import { updateSession } from "@/lib/supabase/proxy";
+import { type NextRequest } from "next/server";
 
-// 🔄 Node.js Runtime이 기본값
-export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
-};
-
-export function proxy(request: NextRequest) {
-  // 🔄 Node.js API 사용 가능
-  const crypto = require("crypto");
-  const hash = crypto.createHash("sha256");
-
-  // 인증 로직
-  const token = request.cookies.get("auth-token")?.value;
-
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  return NextResponse.next();
+export async function proxy(request: NextRequest) {
+  return await updateSession(request);
 }
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+};
 ```
 
-기존 `middleware.ts`가 있는 프로젝트를 업그레이드할 때는 공식 코드모드를 사용하세요.
-
-```bash
-npx @next/codemod@latest next-middleware-to-proxy .
-```
+`updateSession()`(`lib/supabase/proxy.ts`)은 Supabase 세션 쿠키를 요청/응답 간에 동기화하고, `hasEnvVars`가 false면(환경변수 미설정 시) 검사를 건너뛰며, `/`와 `/auth/*`를 제외한 경로에서 미인증 사용자를 `/auth/login`으로 리다이렉트합니다. 새 공개 경로를 추가할 때는 이 파일의 조건문을 함께 수정해야 합니다.
 
 ### unauthorized/forbidden API
 
@@ -545,25 +534,26 @@ function UserProfile({ user }: { user: User }) {
 
 ## 코드 품질 체크리스트
 
-> ⚠️ `package.json`에는 `dev`, `build`, `start`, `lint` 4개 스크립트만 정의되어 있습니다. `typecheck`, `format:check`, `check-all`은 존재하지 않는 스크립트이므로 그대로 실행하면 `npm error Missing script`가 발생합니다.
-
-개발 완료 후 다음 명령어들을 실행하세요:
+개발 완료 후 다음 명령어들을 실행하세요(`package.json`의 실제 스크립트 기준):
 
 ```bash
-# 🚀 필수: 타입 체크 (전용 스크립트가 없으므로 tsc를 직접 호출)
-npx tsc --noEmit
+# 🚀 타입 체크
+npm run type-check
 
-# 🚀 필수: 린트 검사
+# 🚀 린트 검사 (자동 수정: npm run lint:fix)
 npm run lint
 
-# 🚀 필수: 빌드 테스트
+# ✅ 포맷 검사 (자동 수정: npm run format)
+npm run format:check
+
+# 🚀 빌드 테스트
 npm run build
 ```
 
-포맷터(prettier)는 이 프로젝트에 설치되어 있지 않으므로 별도 포맷 검사 단계는 없습니다.
+`check-all`처럼 위 명령어를 한 번에 묶어 실행하는 스크립트는 없습니다. 다만 커밋 시 Husky `pre-commit` 훅이 `lint-staged`를 통해 변경된 파일에 대해 eslint --fix + prettier를 자동 실행합니다(`.husky/pre-commit`).
 
 ## 참고: 이 프로젝트의 버전 관리 유의사항
 
-`package.json`에서 `next`가 `"latest"`로 고정되어 있어 설치 시점마다 실제 버전이 달라질 수 있습니다(현재 확인된 버전: 16.3.0). 이 문서의 예시는 16.x 기준으로 작성되었으며, 향후 메이저 업그레이드 시 이 문서도 함께 갱신이 필요합니다. 또한 `eslint-config-next`가 `15.3.1`로 핀 되어 있어 next 본체 버전과 어긋나 있으니, lint 규칙이 최신 Next 16 권장사항과 다를 수 있는 점을 참고하세요.
+`package.json`에서 `next`, `@supabase/ssr`, `@supabase/supabase-js`가 `"latest"`로 고정되어 있어 설치 시점마다 실제 버전이 달라질 수 있습니다(현재 확인된 next 버전: 16.3.0). 이 문서의 예시는 16.x 기준으로 작성되었으며, 향후 메이저 업그레이드 시 이 문서도 함께 갱신이 필요합니다. `eslint-config-next`는 `^16.3.1`로 next 본체와 맞춰져 있습니다.
 
 이 지침을 따라 Next.js 16의 모든 기능을 최대한 활용하여 현대적이고 성능 최적화된 애플리케이션을 개발하세요.

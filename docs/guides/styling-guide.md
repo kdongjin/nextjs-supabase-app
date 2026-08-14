@@ -2,20 +2,20 @@
 
 이 문서는 TailwindCSS v3 + shadcn/ui를 활용한 스타일링 규칙과 모범 사례를 제공합니다.
 
-> ⚠️ `package.json` 기준 실제 설치 버전은 `tailwindcss@^3.4.1`입니다(v4 아님). v3 방식대로 `tailwind.config.ts`(JS 설정 파일)와 `postcss.config.mjs`(`tailwindcss`/`autoprefixer` 플러그인)로 구성되어 있고, `app/globals.css`는 `@tailwind base/components/utilities` 지시어를 사용합니다. v4의 `@import "tailwindcss"` / `@theme` CSS-first 설정 방식은 사용하지 않습니다.
+> ⚠️ **버전 정정**: `package.json`에는 `tailwindcss": "^3.4.1"`로 명시되어 있고, `tailwind.config.ts`(JS 설정 파일), `postcss.config.mjs`의 `tailwindcss: {}` 플러그인, `app/globals.css`의 `@tailwind base/components/utilities` 지시어 모두 v3 방식입니다. v4는 설정 파일 없이 CSS의 `@import "tailwindcss"`와 `@theme`를 쓰는 방식이라 이 프로젝트와는 다릅니다 — 아래 내용은 v3 기준으로 정정되었습니다.
 
 ## 🎨 기술 스택 개요
 
 ### 핵심 스타일링 도구
 
-- **TailwindCSS v3.4**: 유틸리티 기반 CSS 프레임워크 (`tailwind.config.ts` + `postcss.config.mjs`)
-- **shadcn/ui**: Radix UI 기반 컴포넌트 라이브러리 (`components.json` 기준 `new-york` style, base color `neutral`)
-- **next-themes**: 다크모드 지원 (`app/layout.tsx`의 `ThemeProvider`)
-- **tailwindcss-animate**: 애니메이션 플러그인 (`tailwind.config.ts`의 `plugins`에 등록됨 — `tw-animate-css`가 아님, 이름에 유의)
-- **CSS Variables**: `app/globals.css`에 HSL 채널 값으로 정의된 동적 테마 시스템
-- prettier 및 prettier-plugin-tailwindcss는 **설치되어 있지 않음** — 클래스 자동 정렬은 수동으로 하거나 ESLint만 사용
+- **TailwindCSS v3**(`^3.4.1`): 유틸리티 기반 CSS 프레임워크, `tailwind.config.ts`로 설정
+- **shadcn/ui**: Radix UI 기반 컴포넌트 라이브러리 (new-york style)
+- **next-themes**: 다크모드 지원(`attribute="class"`로 `.dark` 클래스 토글)
+- **tailwindcss-animate**: `tailwind.config.ts`의 `plugins`에 등록된 애니메이션 플러그인 (❌ `tw-animate-css`라는 별도 패키지가 아님 — 흔히 혼동되는 v4용 패키지명이며 이 프로젝트에는 없음)
+- **CSS Variables**: 동적 테마 시스템
+- **prettier-plugin-tailwindcss**: 자동 클래스 정렬
 
-## 🚀 TailwindCSS v3 사용 규칙
+## 🚀 TailwindCSS 사용 규칙
 
 ### 기본 원칙
 
@@ -244,14 +244,17 @@ export function ThemeToggle() {
 
 ### CSS 변수 기반 색상
 
-`app/globals.css`(루트, `src/` 아님)에 정의된 색상 변수 — 아래는 실제 `:root` 값과 일치합니다:
+`app/globals.css`(⚠️ `src/app/`가 아니라 루트 `app/`)에 `:root`(라이트)와 `.dark`(다크, next-themes가 `<html>`에 붙이는 클래스) 두 세트로 정의되어 있습니다. `components.json`의 `baseColor: "neutral"` 설정대로 모든 색상이 hue 0(순수 회색조)이며, `--card`/`--popover`/`--chart-1~5`도 함께 정의되어 있습니다:
 
 ```css
+/* app/globals.css — :root (라이트 모드) */
 :root {
   --background: 0 0% 100%;
   --foreground: 0 0% 3.9%;
   --card: 0 0% 100%;
   --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
   --primary: 0 0% 9%;
   --primary-foreground: 0 0% 98%;
   --secondary: 0 0% 96.1%;
@@ -265,12 +268,14 @@ export function ThemeToggle() {
   --border: 0 0% 89.8%;
   --input: 0 0% 89.8%;
   --ring: 0 0% 3.9%;
+  --chart-1: 12 76% 61%;
+  /* --chart-2 ~ --chart-5 도 정의되어 있음(차트 색상 팔레트) */
   --radius: 0.5rem;
 }
-/* .dark 클래스도 app/globals.css에 대응 값으로 정의되어 있음 */
+/* .dark 클래스 아래에 동일한 변수들의 다크 모드 값이 별도로 정의됨 */
 ```
 
-색상 채널이 전부 `0 0% x%` 형태인 이유는 `components.json`의 `baseColor`가 `neutral`이기 때문입니다(파란빛이 도는 slate 계열이 아니라 순수 회색조).
+이 HSL 값들은 `tailwind.config.ts`의 `theme.extend.colors`에서 `hsl(var(--background))` 형태로 감싸져 `bg-background` 같은 유틸리티 클래스로 노출됩니다. 새 색상 변수를 추가할 때는 `app/globals.css`의 `:root`와 `.dark` 양쪽 모두에, 그리고 `tailwind.config.ts`의 `colors`에 매핑을 추가해야 실제로 클래스가 생성됩니다.
 
 ### 색상 사용 예시
 
@@ -293,23 +298,27 @@ export function ThemeToggle() {
 
 ### tailwindcss-animate 활용
 
-`tw-animate-css`가 아니라 `tailwindcss-animate` 패키지이며, `import`가 아니라 `tailwind.config.ts`의 `plugins: [require("tailwindcss-animate")]`로 이미 등록되어 있습니다. 별도 import 없이 바로 유틸리티 클래스를 사용하면 됩니다.
+`tailwindcss-animate`는 import 없이(플러그인이 `tailwind.config.ts`에 전역 등록되어 있음) `animate-in`/`animate-out`과 `fade-in-0`, `zoom-in-95`, `slide-in-from-top-2` 같은 조합형 유틸리티 클래스를 제공합니다. Radix 기반 컴포넌트(`components/ui/dropdown-menu.tsx` 등)는 열림/닫힘 상태를 나타내는 `data-[state=...]` 속성과 이 클래스들을 조합해서 씁니다. 실제 사용례(`components/ui/dropdown-menu.tsx`):
 
 ```tsx
-// ✅ 플러그인이 제공하는 애니메이션 유틸리티 (Radix 컴포넌트의 open/closed 상태 등과 함께 자주 사용)
-<div className="animate-in fade-in">페이드 인</div>
-<div className="animate-in slide-in-from-bottom">슬라이드 업</div>
-<div className="animate-bounce">바운스</div>
+// ✅ 실제 프로젝트에서 쓰이는 패턴 — data-[state]와 animate-in/out 조합
+<DropdownMenuPrimitive.Content
+  className={cn(
+    "data-[state=open]:animate-in data-[state=closed]:animate-out",
+    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+    "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+    "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2",
+  )}
+/>
 
-// ✅ Tailwind transition 활용
+// ❌ 존재하지 않는 클래스 — animate-fadeIn, animate-slideUp은
+// tailwindcss-animate가 제공하는 클래스명이 아님
+<div className="animate-fadeIn">페이드 인</div>
+
+// ✅ 일반 Tailwind transition도 그대로 사용 가능
 <button className="transition-all duration-200 hover:scale-105 hover:shadow-lg">
   호버 효과
 </button>
-
-// ✅ 복합 애니메이션
-<div className="transform transition-transform duration-300 hover:scale-110 hover:rotate-3">
-  복합 효과
-</div>
 ```
 
 ### 성능 고려사항
