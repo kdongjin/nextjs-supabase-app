@@ -117,13 +117,13 @@ export function Navigation() {
 
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next'
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
-}
+};
 
-export default nextConfig
+export default nextConfig;
 ```
 
 ## ✅ 권장 사항 (성능 최적화)
@@ -165,22 +165,22 @@ async function SlowChart() {
 ### after() API 활용
 
 ```typescript
-import { after } from 'next/server'
+import { after } from "next/server";
 
 export async function POST(request: Request) {
-  const body = await request.json()
+  const body = await request.json();
 
   // 즉시 응답 반환
-  const result = await processUserData(body)
+  const result = await processUserData(body);
 
   // 🔄 비블로킹 작업은 after()로 처리
   after(async () => {
-    await sendAnalytics(result)
-    await updateCache(result.id)
-    await sendNotification(result.userId)
-  })
+    await sendAnalytics(result);
+    await updateCache(result.id);
+    await sendNotification(result.userId);
+  });
 
-  return Response.json({ success: true, id: result.id })
+  return Response.json({ success: true, id: result.id });
 }
 ```
 
@@ -190,13 +190,13 @@ export async function POST(request: Request) {
 
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next'
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
-}
+};
 
-export default nextConfig
+export default nextConfig;
 ```
 
 ```typescript
@@ -229,21 +229,21 @@ export async function getProductData(id: string) {
   const data = await fetch(`/api/products/${id}`, {
     next: {
       revalidate: 3600, // 1시간 캐시
-      tags: [`product-${id}`, 'products'], // 태그 기반 무효화
+      tags: [`product-${id}`, "products"], // 태그 기반 무효화
     },
-  })
+  });
 
-  return data.json()
+  return data.json();
 }
 
-import { revalidateTag } from 'next/cache'
+import { revalidateTag } from "next/cache";
 
 export async function updateProduct(id: string, data: ProductData) {
-  await updateDatabase(id, data)
+  await updateDatabase(id, data);
 
   // 관련 캐시 무효화
-  revalidateTag(`product-${id}`)
-  revalidateTag('products')
+  revalidateTag(`product-${id}`);
+  revalidateTag("products");
 }
 ```
 
@@ -251,31 +251,26 @@ export async function updateProduct(id: string, data: ProductData) {
 
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next'
+import type { NextConfig } from "next";
 
 // 🔄 Next.js 16부터 turbopack 옵션은 experimental.turbo가 아니라
 // nextConfig 최상위(top-level)로 이동했습니다.
 const nextConfig: NextConfig = {
   turbopack: {
     rules: {
-      '*.module.css': {
-        loaders: ['css-loader'],
-        as: 'css',
+      "*.module.css": {
+        loaders: ["css-loader"],
+        as: "css",
       },
     },
   },
   experimental: {
     // 패키지 import 최적화는 여전히 experimental 네임스페이스에 있습니다.
-    optimizePackageImports: [
-      'lucide-react',
-      '@radix-ui/react-icons',
-      'date-fns',
-      'lodash-es',
-    ],
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons", "date-fns", "lodash-es"],
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;
 ```
 
 ## ⚠️ Breaking Changes 대응
@@ -326,26 +321,26 @@ Next.js 16.0.0부터 `middleware.ts`는 `proxy.ts`로 이름이 바뀌었고 함
 
 ```typescript
 // proxy.ts (기존 middleware.ts를 대체)
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
 
 // 🔄 Node.js Runtime이 기본값
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-}
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+};
 
 export function proxy(request: NextRequest) {
   // 🔄 Node.js API 사용 가능
-  const crypto = require('crypto')
-  const hash = crypto.createHash('sha256')
+  const crypto = require("crypto");
+  const hash = crypto.createHash("sha256");
 
   // 인증 로직
-  const token = request.cookies.get('auth-token')?.value
+  const token = request.cookies.get("auth-token")?.value;
 
   if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return NextResponse.next()
+  return NextResponse.next();
 }
 ```
 
