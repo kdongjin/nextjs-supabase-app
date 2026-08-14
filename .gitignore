@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# shrimp-task-manager (로컬 개발 서버 포트 등 세션별 값이 담긴 자동 생성 파일)
+shrimp_data/WebGUI.md
