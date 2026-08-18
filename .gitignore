@@ -46,3 +46,6 @@ shrimp_data/WebGUI.md
 
 # playwright-mcp (테스트 중 생성되는 콘솔 로그·스크린샷 등 디버그 산출물)
 .playwright-mcp/
+
+# 디자인 참고용 임시 이미지 (저장소에 포함하지 않음)
+wisely.png
