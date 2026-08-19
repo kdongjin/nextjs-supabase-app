@@ -1,10 +1,12 @@
-# React Hook Form + Zod + Server Actions 완전 가이드 (⚠️ 아직 미도입 — 참고용 패턴 문서)
+# React Hook Form + Zod + Server Actions 완전 가이드
 
-> **이 문서 전체가 아직 이 프로젝트에 적용되지 않은 아키텍처를 설명합니다.** `react-hook-form`, `@hookform/resolvers`, `zod`는 `package.json`에 없으며(설치 안 됨), `app/actions/`, `components/forms/`, `lib/schemas/`, `lib/types/`, `hooks/` 디렉터리도 실제로는 존재하지 않습니다. 아래 코드 예시가 참조하는 `@/components/ui/form`, `@/components/ui/textarea`, `@/components/ui/select`도 아직 `npx shadcn@latest add`로 추가되지 않은 컴포넌트입니다.
+> **실제 적용 범위: 클라이언트 검증까지.** `react-hook-form`, `@hookform/resolvers`, `zod`는 Task 004(주최자 모바일 UI/UX 완성)에서 `package.json`에 설치되었고, `lib/schemas/event.ts`와 `components/event-form.tsx`(이벤트 생성/수정 공용 폼)가 이 문서의 "필수 패턴: 기본 폼 아키텍처" 절 패턴을 따라 실제로 구현되어 있습니다. `components/ui/form.tsx`, `components/ui/textarea.tsx`도 `npx shadcn@latest add`로 추가되었습니다.
 >
-> 이 프로젝트의 실제 인증 폼(`components/login-form.tsx`, `sign-up-form.tsx` 등)은 Server Actions가 아니라 **Client Component에서 `useState`로 입력값을 관리하고, `lib/supabase/client.ts`의 `createClient()`로 만든 브라우저 클라이언트를 통해 `supabase.auth.signInWithPassword()` 등을 직접 호출**하는 훨씬 단순한 패턴을 씁니다. 새 폼을 추가할 때는 이 문서의 패턴보다 기존 `components/*-form.tsx` 파일들의 실제 코드를 먼저 참고하세요.
+> 단, 이 문서의 "Server Actions 정의" 절이 설명하는 `app/actions/`, `useActionState` 연동은 **아직 적용되지 않았습니다.** Phase 2(더미 데이터 단계)에서는 실제 Supabase 테이블에 조기 연동하지 않는다는 제약(`shrimp-rules.md`)에 따라, `event-form.tsx`의 `onSubmit`은 실제 저장 없이 `sonner` 토스트만 표시하는 stub입니다. Server Actions 연동은 Task 009(이벤트 CRUD 및 초대 시스템)에서 이 stub을 교체하며 진행될 예정입니다.
 >
-> 아래 내용은 향후 이 프로젝트에 React Hook Form + Zod + Server Actions 조합을 도입하기로 결정했을 때 쓸 수 있는 참고 패턴으로 남겨둡니다. 실제로 적용하려면 먼저 패키지를 설치해야 합니다.
+> 인증 폼(`components/login-form.tsx`, `sign-up-form.tsx` 등)은 이 문서의 패턴과 무관하게 여전히 **Client Component `useState` + `lib/supabase/client.ts` 직접 호출** 패턴을 씁니다 — 인증 폼을 수정할 때는 이 문서가 아니라 해당 파일들의 실제 코드를 먼저 참고하세요. 이 문서는 이벤트 폼처럼 여러 필드와 zod 검증이 필요한 폼에 한해 적용되는 패턴입니다.
+>
+> 아래 "다단계 폼", "파일 업로드 폼", "실시간 자동저장 폼", "성능 최적화 패턴", "CSRF/Rate Limiting" 절은 아직 이 프로젝트에 적용되지 않은 참고용 예시로 남아 있습니다. 실제로 필요해지는 시점에 도입 여부를 판단하세요.
 
 이 문서는 Next.js 16에서 React Hook Form + Zod + Server Actions를 활용한 폼 처리 패턴(도입 시 참고용)을 제공합니다.
 
