@@ -1,602 +1,359 @@
 {
   "tasks": [
     {
-      "id": "b6116377-1038-44b2-a471-aa9482853f4d",
-      "name": "모바일 하단 내비게이션 컴포넌트 및 (main) 라우트 그룹 레이아웃 구현",
-      "description": "인증이 필요한 사용자 영역(이벤트/프로필)에서 공통으로 쓸 Route Group `app/(main)/`과 그 layout.tsx, 그리고 하단 고정 내비게이션 바 골격 컴포넌트 components/bottom-nav.tsx를 생성한다. Route Group은 URL 경로에 영향을 주지 않으므로 실제 URL은 여전히 /events, /profile 등으로 유지된다.",
-      "notes": "components/ 최상위 flat 배치 유지(shrimp-rules.md 컨벤션). Tailwind는 v3 문법만 사용, tailwind.config.ts에 없는 v4 클래스 금지.",
+      "id": "e198af04-c5df-43bb-a02a-76deb7505628",
+      "name": "react-hook-form/Zod 설치 및 이벤트 폼 스키마 정의",
+      "description": "npm install react-hook-form @hookform/resolvers zod로 3개 패키지를 설치하고, lib/schemas/event.ts에 eventFormSchema(zod)를 정의한다. title(1자 이상 필수), location(1자 이상 필수), eventDate(빈 문자열 불가, datetime-local 문자열 필수), description(선택, nullable/optional), coverImageUrl(선택, 빈 문자열 허용 또는 url 형식). z.infer로 EventFormValues 타입도 함께 export한다. docs/guides/forms-react-hook-form.md 최상단의 '⚠️ 아직 미도입 — 참고용' 경고 블록(1~7번째 줄)을 제거하고, 이 문서가 이제 실제 아키텍처임을 명시하는 문구로 교체한다(단, app/actions/ Server Actions 패턴 부분은 이번 Task 범위가 아니므로 '실제 적용 범위: 클라이언트 검증까지, Server Actions 연동은 Task 009 예정'이라는 안내를 덧붙인다).",
+      "notes": "npm ls react-hook-form / @hookform/resolvers / zod로 실제 설치 버전을 확인할 것(package.json이 latest로 열려있는 다른 패키지와 달리 이번엔 고정 버전으로 설치됨).",
       "status": "completed",
       "dependencies": [],
-      "createdAt": "2026-08-18T07:44:52.897Z",
-      "updatedAt": "2026-08-18T07:47:28.272Z",
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T07:38:39.258Z",
       "relatedFiles": [
         {
-          "path": "components/bottom-nav.tsx",
-          "type": "CREATE",
-          "description": "모바일 하단 내비게이션 바 골격 컴포넌트"
-        },
-        {
-          "path": "app/(main)/layout.tsx",
-          "type": "CREATE",
-          "description": "인증 필요 사용자 영역 공통 레이아웃(Route Group)"
-        },
-        {
-          "path": "app/protected/layout.tsx",
-          "type": "REFERENCE",
-          "description": "기존 최소 레이아웃 wrapper 패턴 참고용"
-        }
-      ],
-      "implementationGuide": "1) components/bottom-nav.tsx 생성: 'use client' 불필요(정적 골격이면 서버 컴포넌트 가능, 다만 향후 usePathname으로 활성 탭 표시 예정이므로 'use client' 지정). 4개 탭 자리(내 이벤트, 새 이벤트 만들기 FAB, 프로필 등 PRD 메뉴 구조 참고)를 nav 엘리먼트 안에 placeholder Link들로 배치. 실제 아이콘/활성 상태 로직은 구현하지 않음(자리만).\n2) app/(main)/layout.tsx 생성: children을 감싸고 하단에 <BottomNav /> 렌더. app/protected/layout.tsx의 최소 wrapper 패턴을 참고하되 인증 체크 코드는 넣지 않는다(Task 008 몫).\npseudocode:\n```\n// components/bottom-nav.tsx\n'use client'\nexport function BottomNav() {\n  return <nav className=\"fixed bottom-0 ...\">{/* 4 tab placeholders */}</nav>\n}\n\n// app/(main)/layout.tsx\nimport { BottomNav } from '@/components/bottom-nav'\nexport default function MainLayout({ children }) {\n  return <div>{children}<BottomNav /></div>\n}\n```",
-      "verificationCriteria": "app/(main)/layout.tsx가 children과 BottomNav를 렌더하고, dev 서버에서 (main) 그룹 하위 페이지 접속 시 하단에 내비게이션 바 자리가 보인다. URL에 (main) 세그먼트가 노출되지 않는다.",
-      "analysisResult": "Task 001: Gather 서비스의 Next.js 16 App Router 라우트 골격(13개 페이지 placeholder)과 레이아웃 골격(모바일 하단 내비게이션 / 관리자 사이드바)을 구축한다. 범위는 라우팅·레이아웃 구조뿐이며 실제 UI/데이터/인증 로직은 이후 Task(003~006 UI, 008 인증)로 미룬다. 라우트 구조: 사용자 영역은 app/(main)/ Route Group(URL 영향 없음, BottomNav 레이아웃), 관리자 대시보드류는 app/admin/(dashboard)/ Route Group(AdminSidebar 레이아웃), 관리자 로그인은 app/admin/login/으로 사이드바 레이아웃 형제 분리, 초대 참여는 app/join/[invite_code]/에 레이아웃 없이 배치. 기존 app/protected/, app/instruments/, app/auth/*, app/page.tsx는 건드리지 않는다. proxy.ts도 이번 Task에서 수정하지 않는다(Task 008에서 처리 예정, 계획 노트로만 남김). 모든 page.tsx는 최소 placeholder 서버 컴포넌트, kebab-case 파일명, docs/guides/project-structure.md 컨벤션 준수.",
-      "summary": "components/bottom-nav.tsx(usePathname으로 활성 탭 표시, cn() 활용, 3개 탭 placeholder)와 app/(main)/layout.tsx(children + BottomNav, pb-16으로 하단바 겹침 방지)를 생성 완료. Route Group이므로 URL에 영향 없음. 인증 체크 로직은 포함하지 않음(Task 008 몫). shadcn 컨벤션(cn, @/ alias) 및 kebab-case 파일명 준수.",
-      "completedAt": "2026-08-18T07:47:28.269Z"
-    },
-    {
-      "id": "78bc6380-6236-4dd4-b6a5-8377ce0e660d",
-      "name": "이벤트 관련 4개 페이지 골격 생성",
-      "description": "app/(main)/events/ 하위에 내 이벤트 목록(/events), 이벤트 생성(/events/new), 이벤트 상세(/events/[id]), 이벤트 수정(/events/[id]/edit) 4개 페이지의 빈 껍데기 page.tsx를 생성한다.",
-      "notes": "이번 Task에서는 params를 사용하지 않으므로 Promise 타입 이슈가 발생하지 않는다(향후 Task에서 실제 사용 시 await params 필수).",
-      "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "b6116377-1038-44b2-a471-aa9482853f4d"
-        }
-      ],
-      "createdAt": "2026-08-18T07:44:52.897Z",
-      "updatedAt": "2026-08-18T07:53:57.294Z",
-      "relatedFiles": [
-        {
-          "path": "app/(main)/events/page.tsx",
-          "type": "CREATE",
-          "description": "내 이벤트 목록 페이지 골격"
-        },
-        {
-          "path": "app/(main)/events/new/page.tsx",
-          "type": "CREATE",
-          "description": "이벤트 생성 페이지 골격"
-        },
-        {
-          "path": "app/(main)/events/[id]/page.tsx",
-          "type": "CREATE",
-          "description": "이벤트 상세 페이지 골격"
-        },
-        {
-          "path": "app/(main)/events/[id]/edit/page.tsx",
-          "type": "CREATE",
-          "description": "이벤트 수정 페이지 골격"
-        }
-      ],
-      "implementationGuide": "각 page.tsx는 최소 placeholder만 포함: 페이지 제목 텍스트 하나를 렌더하는 default export 서버 컴포넌트. 동적 라우트 [id]는 Next.js 16 규칙상 params가 Promise이므로, 이번 단계에서 실제로 params를 사용하지 않더라도(placeholder라 불필요) 향후 사용 시 `params: Promise<{ id: string }>` 형태로 타입을 잡을 것을 notes에만 남기고 이번 파일에서는 params를 참조하지 않는다.\npseudocode:\n```\n// app/(main)/events/page.tsx\nexport default function EventsPage() { return <div>내 이벤트 목록</div> }\n// app/(main)/events/new/page.tsx\nexport default function NewEventPage() { return <div>이벤트 생성</div> }\n// app/(main)/events/[id]/page.tsx\nexport default function EventDetailPage() { return <div>이벤트 상세</div> }\n// app/(main)/events/[id]/edit/page.tsx\nexport default function EditEventPage() { return <div>이벤트 수정</div> }\n```",
-      "verificationCriteria": "dev 서버에서 /events, /events/new, /events/123, /events/123/edit 4개 경로 모두 200 응답과 함께 각 placeholder 텍스트가 하단 내비게이션 바와 함께 렌더된다.",
-      "analysisResult": "Task 001: Gather 서비스의 Next.js 16 App Router 라우트 골격(13개 페이지 placeholder)과 레이아웃 골격(모바일 하단 내비게이션 / 관리자 사이드바)을 구축한다. 범위는 라우팅·레이아웃 구조뿐이며 실제 UI/데이터/인증 로직은 이후 Task(003~006 UI, 008 인증)로 미룬다. 라우트 구조: 사용자 영역은 app/(main)/ Route Group(URL 영향 없음, BottomNav 레이아웃), 관리자 대시보드류는 app/admin/(dashboard)/ Route Group(AdminSidebar 레이아웃), 관리자 로그인은 app/admin/login/으로 사이드바 레이아웃 형제 분리, 초대 참여는 app/join/[invite_code]/에 레이아웃 없이 배치. 기존 app/protected/, app/instruments/, app/auth/*, app/page.tsx는 건드리지 않는다. proxy.ts도 이번 Task에서 수정하지 않는다(Task 008에서 처리 예정, 계획 노트로만 남김). 모든 page.tsx는 최소 placeholder 서버 컴포넌트, kebab-case 파일명, docs/guides/project-structure.md 컨벤션 준수.",
-      "summary": "app/(main)/events/page.tsx, new/page.tsx, [id]/page.tsx, [id]/edit/page.tsx 4개 파일을 모두 최소 placeholder 서버 컴포넌트로 생성 완료. 동적 라우트 [id]는 params를 참조하지 않아 Next.js 16의 Promise 타입 이슈 없음. (main) Route Group 하위에 위치하여 BottomNav 레이아웃을 자동으로 상속받는다.",
-      "completedAt": "2026-08-18T07:53:57.290Z"
-    },
-    {
-      "id": "e41b38bc-66fe-4733-b8a4-8eba6e7e1d03",
-      "name": "프로필 페이지 및 초대 링크 참여 페이지 골격 생성",
-      "description": "app/(main)/profile/page.tsx(프로필, BottomNav 레이아웃 적용)와 app/join/[invite_code]/page.tsx(초대 링크 참여, 레이아웃 없이 루트 layout.tsx만 적용) 2개 페이지의 빈 껍데기를 생성한다.",
-      "notes": "app/join/[invite_code]는 proxy.ts의 리다이렉트 예외 경로에 없으므로 미로그인 시 /auth/login으로 리다이렉트된다(Task 008에서 예외 처리 예정). 이번 Task에서는 proxy.ts를 수정하지 않는다.",
-      "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "b6116377-1038-44b2-a471-aa9482853f4d"
-        }
-      ],
-      "createdAt": "2026-08-18T07:44:52.897Z",
-      "updatedAt": "2026-08-18T07:55:50.953Z",
-      "relatedFiles": [
-        {
-          "path": "app/(main)/profile/page.tsx",
-          "type": "CREATE",
-          "description": "프로필 페이지 골격"
-        },
-        {
-          "path": "app/join/[invite_code]/page.tsx",
-          "type": "CREATE",
-          "description": "초대 링크 참여 페이지 골격"
-        },
-        {
-          "path": "lib/supabase/proxy.ts",
-          "type": "REFERENCE",
-          "description": "리다이렉트 예외 경로 로직 확인용(이번 Task에서 수정하지 않음)"
-        }
-      ],
-      "implementationGuide": "profile은 (main) 그룹 안에 두어 하단 내비게이션이 함께 보이도록 하고, join은 (main) 그룹 밖의 독립 세그먼트로 두어 하단 내비게이션 없이 단독 페이지로 렌더되게 한다(초대받은 비로그인 사용자가 볼 화면이므로 사용자 전용 내비게이션이 없어야 함).\npseudocode:\n```\n// app/(main)/profile/page.tsx\nexport default function ProfilePage() { return <div>프로필</div> }\n// app/join/[invite_code]/page.tsx\nexport default function JoinPage() { return <div>초대 링크 참여</div> }\n```",
-      "verificationCriteria": "dev 서버에서 /profile 접속 시 하단 내비게이션과 함께 placeholder가 보이고, /join/abc123 접속 시 하단 내비게이션 없이 placeholder만 보인다(단, 인증 미들웨어에 의해 /auth/login으로 리다이렉트될 수 있음은 정상).",
-      "analysisResult": "Task 001: Gather 서비스의 Next.js 16 App Router 라우트 골격(13개 페이지 placeholder)과 레이아웃 골격(모바일 하단 내비게이션 / 관리자 사이드바)을 구축한다. 범위는 라우팅·레이아웃 구조뿐이며 실제 UI/데이터/인증 로직은 이후 Task(003~006 UI, 008 인증)로 미룬다. 라우트 구조: 사용자 영역은 app/(main)/ Route Group(URL 영향 없음, BottomNav 레이아웃), 관리자 대시보드류는 app/admin/(dashboard)/ Route Group(AdminSidebar 레이아웃), 관리자 로그인은 app/admin/login/으로 사이드바 레이아웃 형제 분리, 초대 참여는 app/join/[invite_code]/에 레이아웃 없이 배치. 기존 app/protected/, app/instruments/, app/auth/*, app/page.tsx는 건드리지 않는다. proxy.ts도 이번 Task에서 수정하지 않는다(Task 008에서 처리 예정, 계획 노트로만 남김). 모든 page.tsx는 최소 placeholder 서버 컴포넌트, kebab-case 파일명, docs/guides/project-structure.md 컨벤션 준수.",
-      "summary": "app/(main)/profile/page.tsx(BottomNav 레이아웃 상속)와 app/join/[invite_code]/page.tsx((main) 그룹 밖 독립 세그먼트, 레이아웃 없이 루트 layout.tsx만 적용)를 최소 placeholder 서버 컴포넌트로 생성 완료. join 페이지는 proxy.ts 예외 경로에 없어 미로그인 시 /auth/login으로 리다이렉트되는 점을 notes로 남김(Task 008에서 처리 예정).",
-      "completedAt": "2026-08-18T07:55:50.949Z"
-    },
-    {
-      "id": "170aa1b6-e4a2-421f-9647-0f88b231c2be",
-      "name": "관리자 사이드바 컴포넌트 및 admin/(dashboard) 라우트 그룹 레이아웃 구현",
-      "description": "관리자 대시보드류 페이지에서 공통으로 쓸 Route Group `app/admin/(dashboard)/`과 그 layout.tsx, 좌측 사이드바 골격 컴포넌트 components/admin-sidebar.tsx를 생성한다. /admin/login은 이 레이아웃에 포함되지 않도록 형제 세그먼트로 분리하는 구조 설계를 반영한다(이 Task에서는 사이드바 레이아웃만 구현, login 페이지 생성은 다음 Task에서).",
-      "notes": "PRD 디자인 가이드 기준 사이드바 240px, Gray 900 배경 등은 골격 단계이므로 정확한 색상까지는 이번 Task 필수 아님(자리와 구조만).",
-      "status": "completed",
-      "dependencies": [],
-      "createdAt": "2026-08-18T07:44:52.897Z",
-      "updatedAt": "2026-08-18T07:56:53.491Z",
-      "relatedFiles": [
-        {
-          "path": "components/admin-sidebar.tsx",
-          "type": "CREATE",
-          "description": "관리자 좌측 사이드바 골격 컴포넌트"
-        },
-        {
-          "path": "app/admin/(dashboard)/layout.tsx",
-          "type": "CREATE",
-          "description": "관리자 대시보드류 공통 레이아웃(Route Group)"
-        }
-      ],
-      "implementationGuide": "1) components/admin-sidebar.tsx 생성: 좌측 고정 240px 사이드바, 메뉴 항목(대시보드/이벤트 관리/사용자 관리/통계 분석/로그아웃) placeholder Link 목록.\n2) app/admin/(dashboard)/layout.tsx 생성: flex 레이아웃으로 AdminSidebar + children(메인 콘텐츠 영역) 배치.\nRoute Group `(dashboard)`는 URL에 영향을 주지 않으므로 실제 경로는 /admin/dashboard 그대로 유지되고, admin/login(형제 세그먼트, 다음 Task에서 생성)은 이 레이아웃을 상속하지 않는다.\npseudocode:\n```\n// components/admin-sidebar.tsx\nexport function AdminSidebar() {\n  return <aside className=\"w-[240px] ...\">{/* 5 menu placeholders */}</aside>\n}\n// app/admin/(dashboard)/layout.tsx\nimport { AdminSidebar } from '@/components/admin-sidebar'\nexport default function AdminDashboardLayout({ children }) {\n  return <div className=\"flex\"><AdminSidebar /><main className=\"flex-1\">{children}</main></div>\n}\n```",
-      "verificationCriteria": "app/admin/(dashboard)/layout.tsx가 AdminSidebar와 children을 렌더하며, URL에 (dashboard) 세그먼트가 노출되지 않는다.",
-      "analysisResult": "Task 001: Gather 서비스의 Next.js 16 App Router 라우트 골격(13개 페이지 placeholder)과 레이아웃 골격(모바일 하단 내비게이션 / 관리자 사이드바)을 구축한다. 범위는 라우팅·레이아웃 구조뿐이며 실제 UI/데이터/인증 로직은 이후 Task(003~006 UI, 008 인증)로 미룬다. 라우트 구조: 사용자 영역은 app/(main)/ Route Group(URL 영향 없음, BottomNav 레이아웃), 관리자 대시보드류는 app/admin/(dashboard)/ Route Group(AdminSidebar 레이아웃), 관리자 로그인은 app/admin/login/으로 사이드바 레이아웃 형제 분리, 초대 참여는 app/join/[invite_code]/에 레이아웃 없이 배치. 기존 app/protected/, app/instruments/, app/auth/*, app/page.tsx는 건드리지 않는다. proxy.ts도 이번 Task에서 수정하지 않는다(Task 008에서 처리 예정, 계획 노트로만 남김). 모든 page.tsx는 최소 placeholder 서버 컴포넌트, kebab-case 파일명, docs/guides/project-structure.md 컨벤션 준수.",
-      "summary": "components/admin-sidebar.tsx(240px 고정 좌측 사이드바, 4개 메뉴 링크 + 로그아웃 placeholder)와 app/admin/(dashboard)/layout.tsx(AdminSidebar + children flex 레이아웃)를 생성 완료. Route Group (dashboard)는 URL에 영향을 주지 않으므로 /admin/dashboard 등 경로가 그대로 유지되고, admin/login은 이 레이아웃 밖의 형제 세그먼트로 남아 사이드바를 상속받지 않는다.",
-      "completedAt": "2026-08-18T07:56:53.488Z"
-    },
-    {
-      "id": "09e9f796-ae48-4ba7-a501-4a94fb45edfe",
-      "name": "관리자 로그인 및 대시보드류 4개 페이지 골격 생성",
-      "description": "app/admin/login/page.tsx(사이드바 없음)와 app/admin/(dashboard)/ 하위 dashboard, events, users, analytics 4개 페이지의 빈 껍데기를 생성한다.",
-      "notes": "admin/login과 admin/(dashboard)/* 모두 proxy.ts 리다이렉트 예외 경로(/, /login, /auth/*)에 해당하지 않아 미로그인 시 /auth/login으로 리다이렉트된다. role:admin 체크 및 관리자 전용 인증 흐름은 Task 008 몫이며 이번 Task에서 구현하지 않는다.",
-      "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "170aa1b6-e4a2-421f-9647-0f88b231c2be"
-        }
-      ],
-      "createdAt": "2026-08-18T07:44:52.897Z",
-      "updatedAt": "2026-08-18T07:58:42.644Z",
-      "relatedFiles": [
-        {
-          "path": "app/admin/login/page.tsx",
-          "type": "CREATE",
-          "description": "관리자 로그인 페이지 골격(사이드바 없음)"
-        },
-        {
-          "path": "app/admin/(dashboard)/dashboard/page.tsx",
-          "type": "CREATE",
-          "description": "관리자 대시보드 메인 페이지 골격"
-        },
-        {
-          "path": "app/admin/(dashboard)/events/page.tsx",
-          "type": "CREATE",
-          "description": "관리자 이벤트 관리 페이지 골격"
-        },
-        {
-          "path": "app/admin/(dashboard)/users/page.tsx",
-          "type": "CREATE",
-          "description": "관리자 사용자 관리 페이지 골격"
-        },
-        {
-          "path": "app/admin/(dashboard)/analytics/page.tsx",
-          "type": "CREATE",
-          "description": "관리자 통계 분석 페이지 골격"
-        }
-      ],
-      "implementationGuide": "admin/login은 admin/(dashboard)/layout.tsx의 형제 세그먼트이므로 자동으로 사이드바 레이아웃을 상속하지 않는다(루트 layout.tsx만 적용). 나머지 4개는 (dashboard) 그룹 안에 두어 사이드바가 함께 렌더되게 한다.\npseudocode:\n```\n// app/admin/login/page.tsx\nexport default function AdminLoginPage() { return <div>관리자 로그인</div> }\n// app/admin/(dashboard)/dashboard/page.tsx\nexport default function AdminDashboardPage() { return <div>관리자 대시보드</div> }\n// app/admin/(dashboard)/events/page.tsx\nexport default function AdminEventsPage() { return <div>이벤트 관리</div> }\n// app/admin/(dashboard)/users/page.tsx\nexport default function AdminUsersPage() { return <div>사용자 관리</div> }\n// app/admin/(dashboard)/analytics/page.tsx\nexport default function AdminAnalyticsPage() { return <div>통계 분석</div> }\n```",
-      "verificationCriteria": "dev 서버에서 /admin/login 접속 시 사이드바 없이 placeholder만 보이고, /admin/dashboard, /admin/events, /admin/users, /admin/analytics 접속 시 좌측 사이드바와 함께 각 placeholder가 보인다(단, 인증 미들웨어에 의해 /auth/login으로 리다이렉트될 수 있음은 정상).",
-      "analysisResult": "Task 001: Gather 서비스의 Next.js 16 App Router 라우트 골격(13개 페이지 placeholder)과 레이아웃 골격(모바일 하단 내비게이션 / 관리자 사이드바)을 구축한다. 범위는 라우팅·레이아웃 구조뿐이며 실제 UI/데이터/인증 로직은 이후 Task(003~006 UI, 008 인증)로 미룬다. 라우트 구조: 사용자 영역은 app/(main)/ Route Group(URL 영향 없음, BottomNav 레이아웃), 관리자 대시보드류는 app/admin/(dashboard)/ Route Group(AdminSidebar 레이아웃), 관리자 로그인은 app/admin/login/으로 사이드바 레이아웃 형제 분리, 초대 참여는 app/join/[invite_code]/에 레이아웃 없이 배치. 기존 app/protected/, app/instruments/, app/auth/*, app/page.tsx는 건드리지 않는다. proxy.ts도 이번 Task에서 수정하지 않는다(Task 008에서 처리 예정, 계획 노트로만 남김). 모든 page.tsx는 최소 placeholder 서버 컴포넌트, kebab-case 파일명, docs/guides/project-structure.md 컨벤션 준수.",
-      "summary": "app/admin/login/page.tsx(형제 세그먼트, 사이드바 미상속)와 app/admin/(dashboard)/ 하위 dashboard, events, users, analytics 4개 페이지를 최소 placeholder 서버 컴포넌트로 생성 완료. (dashboard) Route Group 하위 페이지들은 AdminSidebar 레이아웃을 상속받고, login은 루트 layout.tsx만 적용된다.",
-      "completedAt": "2026-08-18T07:58:42.642Z"
-    },
-    {
-      "id": "f98a0a99-6841-4c69-892d-8e23c84a5129",
-      "name": "핵심 도메인 타입 정의 (Profile, Event, EventParticipant)",
-      "description": "원격 Supabase profiles/events/event_participants 테이블의 실제 컬럼(mcp__supabase__list_tables 실측 결과)을 1:1로 반영한 프론트엔드 임시 도메인 타입을 lib/types/profile.ts와 lib/types/event.ts에 작성한다. PRD.md의 'name' 필드는 실제 컬럼과 다르므로 사용하지 않고, 실제 컬럼명(username, full_name)을 그대로 쓴다.",
-      "notes": "PRD.md 데이터 모델 표를 그대로 베끼지 말고, 이번 대화에서 mcp__supabase__list_tables(verbose:true)로 확인한 실제 컬럼(특히 profiles.username/full_name, nullable 여부, role/status의 check 제약)을 기준으로 타입을 작성할 것.",
-      "status": "completed",
-      "dependencies": [],
-      "createdAt": "2026-08-19T05:39:09.167Z",
-      "updatedAt": "2026-08-19T05:53:31.206Z",
-      "relatedFiles": [
-        {
-          "path": "lib/types/profile.ts",
-          "type": "CREATE",
-          "description": "Profile 도메인 타입 및 UserRole 유니언 타입"
-        },
-        {
-          "path": "lib/types/event.ts",
-          "type": "CREATE",
-          "description": "Event/EventParticipant 도메인 타입 및 EventStatus/ParticipantRole 유니언 타입"
-        },
-        {
-          "path": "docs/PRD.md",
-          "type": "REFERENCE",
-          "description": "데이터 모델 섹션(단, 실제 컬럼명은 list_tables 결과를 우선)",
-          "lineStart": 353,
-          "lineEnd": 406
-        },
-        {
-          "path": "lib/supabase/client.ts",
-          "type": "REFERENCE",
-          "description": "기존 lib/ 하위 파일의 named export 및 파일 구성 스타일 참고"
-        }
-      ],
-      "implementationGuide": "lib/types/profile.ts:\n- export type UserRole = 'user' | 'admin'\n- export interface Profile { id: string; email: string; username: string | null; fullName: string | null; avatarUrl: string | null; role: UserRole; createdAt: string; updatedAt: string }\n  주: DB 컬럼은 snake_case(full_name, avatar_url, created_at, updated_at)이지만 프론트엔드 타입은 기존 컴포넌트 관례(camelCase 변수명)에 맞춰 camelCase 필드명을 쓰고, 파일 상단 주석에 'DB 컬럼명과 camelCase로 매핑됨(추후 실제 fetch 레이어에서 변환)'을 1줄로 명시한다.\n- 파일 최상단에 '임시 프론트엔드 타입, Task 007에서 실제 DB 스키마 타입으로 교체 예정' 한국어 주석 1줄 추가.\n\nlib/types/event.ts:\n- export type EventStatus = 'upcoming' | 'ongoing' | 'ended'\n- export type ParticipantRole = 'host' | 'participant'\n- export interface Event { id: string; title: string; description: string | null; location: string; eventDate: string; coverImageUrl: string | null; inviteCode: string; status: EventStatus; createdBy: string; createdAt: string; updatedAt: string }\n- export interface EventParticipant { id: string; eventId: string; userId: string; role: ParticipantRole; joinedAt: string }\n- 동일하게 파일 상단 임시 타입 주석 추가.\n\n두 파일 모두 상호 import 없이 독립적으로 작성 가능(순환 참조 없음).",
-      "verificationCriteria": "lib/types/profile.ts, lib/types/event.ts가 생성되고 npx tsc --noEmit(npm run type-check) 통과. 모든 필드가 실제 Supabase profiles/events/event_participants 컬럼과 1:1 대응됨을 mcp__supabase__list_tables 결과와 대조하여 확인. kebab-case 파일명, named export, 한국어 주석 준수.",
-      "analysisResult": "Gather 프로젝트 ROADMAP.md Phase 1 Task 002 \"타입 정의 및 인터페이스 설계\"의 최종 목표: lib/types/ 디렉터리를 신설하여 (1) profiles/events/event_participants 원격 Supabase 테이블(mcp__supabase__list_tables로 실측한 실제 컬럼)에 대응하는 프론트엔드 임시 도메인 타입, (2) PRD.md의 13개 페이지 요구사항에서 역산한 화면 조합용 뷰모델 타입, (3) 관리자 대시보드/테이블/통계용 타입, (4) Server Action 반환값에 재사용할 공통 API 결과 타입을 작성한다. 배럴 파일(index.ts)은 lib/supabase/의 기존 패턴(client.ts/server.ts/proxy.ts를 개별 경로로 import)을 따라 만들지 않는다. 전역 상태 관리 타입은 현재 상태관리 라이브러리가 프로젝트에 없으므로 이번 Task에서 별도 파일을 만들지 않고 범위를 명시적으로 제외한다(향후 Task 004/008에서 필요 시 추가). 모든 파일은 kebab-case, named export, 한국어 주석(타입 단위 1줄), @/ 경로 별칭을 따른다. 이 Task는 순수 타입 정의만 다루며 실제 Supabase 쿼리 코드(from(\"events\") 등)는 작성하지 않는다(Phase 2 더미 데이터 원칙 준수). 완료 후 npm run type-check와 npm run lint로 전체 검증한다.",
-      "summary": "lib/types/profile.ts와 lib/types/event.ts를 신규 생성했다. mcp__supabase__list_tables 실측 결과(profiles.username/full_name, events.status check 제약 등)를 PRD.md보다 우선해 필드명을 결정했고, DB snake_case 컬럼을 camelCase 필드로 매핑한다는 점을 파일 상단에 한국어 주석으로 명시했다. UserRole/EventStatus/ParticipantRole 유니언 타입과 Profile/Event/EventParticipant 인터페이스를 named export로 작성했으며 두 파일은 상호 import 없는 독립 파일이다. 배럴 파일(index.ts)은 lib/supabase/ 기존 패턴을 따라 생성하지 않았다. 최초 구현본이 작은따옴표를 사용해 .prettierrc.json(singleQuote:false)과 어긋났던 것을 npx prettier --write로 수정했고, npm run type-check와 npm run lint 모두 재검증 통과했다.",
-      "completedAt": "2026-08-19T05:53:31.202Z"
-    },
-    {
-      "id": "4671363c-c0c0-432f-8c8e-4742dea7658e",
-      "name": "이벤트 뷰모델 타입 정의 (event-view.ts)",
-      "description": "PRD.md 13개 페이지 요구사항(F005 실시간 참여자 목록, F007/F008 이벤트 목록+상태 필터+참여자 수)에서 역산한 화면 조합용 뷰모델 타입을 lib/types/event-view.ts에 작성한다. Event/Profile 원본 타입을 조합해 컴포넌트가 바로 소비할 수 있는 형태로 만든다.",
-      "notes": "이 파일은 event.ts와 profile.ts에 의존하므로 반드시 그 두 파일이 먼저 존재해야 타입 체크가 통과한다.",
-      "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "f98a0a99-6841-4c69-892d-8e23c84a5129"
-        }
-      ],
-      "createdAt": "2026-08-19T05:39:09.167Z",
-      "updatedAt": "2026-08-19T05:56:33.523Z",
-      "relatedFiles": [
-        {
-          "path": "lib/types/event-view.ts",
-          "type": "CREATE",
-          "description": "이벤트 상세/카드 화면 조합용 뷰모델 타입"
-        },
-        {
-          "path": "lib/types/event.ts",
-          "type": "DEPENDENCY",
-          "description": "Event, EventParticipant 원본 타입"
-        },
-        {
-          "path": "lib/types/profile.ts",
-          "type": "DEPENDENCY",
-          "description": "Profile 원본 타입"
-        },
-        {
-          "path": "docs/PRD.md",
-          "type": "REFERENCE",
-          "description": "내 이벤트 목록/이벤트 상세 페이지 상세 기능 섹션",
-          "lineStart": 199,
-          "lineEnd": 240
-        }
-      ],
-      "implementationGuide": "lib/types/event-view.ts:\n- import type { Event } from '@/lib/types/event'\n- import type { Profile } from '@/lib/types/profile'\n- export interface EventParticipantWithProfile { id: string; role: 'host' | 'participant'; joinedAt: string; profile: Pick<Profile, 'id' | 'username' | 'fullName' | 'avatarUrl'> } (이벤트 상세 페이지의 실시간 참여자 목록용, F005)\n- export interface EventWithParticipants extends Event { participants: EventParticipantWithProfile[]; participantCount: number } (이벤트 상세 페이지 전체 데이터, F001/F002/F003/F005/F006/F008/F009)\n- export interface EventCardSummary extends Pick<Event, 'id' | 'title' | 'eventDate' | 'coverImageUrl' | 'status' | 'location'> { participantCount: number } (내 이벤트 목록 카드용, F007/F008 - 목록 페이지는 전체 Event를 다 쓰지 않고 카드에 필요한 필드만 사용)\n- 각 interface 위에 어떤 페이지/기능(F00x)을 위한 타입인지 한국어 주석 1줄.\n\nProfile 원본을 그대로 노출하지 않고 Pick으로 필요한 필드만 좁혀서, 이메일 같은 민감 정보가 참여자 목록 뷰모델에 섞이지 않도록 한다(email은 프로필 페이지 F011 전용 필드).",
-      "verificationCriteria": "lib/types/event-view.ts가 생성되고, @/lib/types/event·@/lib/types/profile을 정상 import하며 npm run type-check 통과. EventCardSummary가 Profile의 email 등 민감 필드를 노출하지 않음을 코드 리뷰로 확인.",
-      "analysisResult": "Gather 프로젝트 ROADMAP.md Phase 1 Task 002 \"타입 정의 및 인터페이스 설계\"의 최종 목표: lib/types/ 디렉터리를 신설하여 (1) profiles/events/event_participants 원격 Supabase 테이블(mcp__supabase__list_tables로 실측한 실제 컬럼)에 대응하는 프론트엔드 임시 도메인 타입, (2) PRD.md의 13개 페이지 요구사항에서 역산한 화면 조합용 뷰모델 타입, (3) 관리자 대시보드/테이블/통계용 타입, (4) Server Action 반환값에 재사용할 공통 API 결과 타입을 작성한다. 배럴 파일(index.ts)은 lib/supabase/의 기존 패턴(client.ts/server.ts/proxy.ts를 개별 경로로 import)을 따라 만들지 않는다. 전역 상태 관리 타입은 현재 상태관리 라이브러리가 프로젝트에 없으므로 이번 Task에서 별도 파일을 만들지 않고 범위를 명시적으로 제외한다(향후 Task 004/008에서 필요 시 추가). 모든 파일은 kebab-case, named export, 한국어 주석(타입 단위 1줄), @/ 경로 별칭을 따른다. 이 Task는 순수 타입 정의만 다루며 실제 Supabase 쿼리 코드(from(\"events\") 등)는 작성하지 않는다(Phase 2 더미 데이터 원칙 준수). 완료 후 npm run type-check와 npm run lint로 전체 검증한다.",
-      "summary": "lib/types/event-view.ts를 신규 생성했다. event.ts/profile.ts를 @/lib/types 경로로 import해 EventParticipantWithProfile(F005 실시간 참여자 목록), EventWithParticipants(F001/F002/F003/F005/F006/F008/F009 이벤트 상세), EventCardSummary(F007/F008 목록 카드) 세 뷰모델 인터페이스를 작성했다. 설계 의도대로 EventParticipantWithProfile.profile은 Pick<Profile,\"id\"|\"username\"|\"fullName\"|\"avatarUrl\">로 좁혀 email 등 민감 필드를 노출하지 않았고, EventCardSummary도 Event 전체가 아닌 카드 필요 필드만 Pick했다. 큰따옴표/세미콜론 등 .prettierrc.json 규칙, named export, 한국어 주석 1줄 규칙을 모두 준수했으며 배럴 파일은 생성하지 않았다. npm run type-check, npm run lint, npx prettier --check 모두 재검증 통과했다.",
-      "completedAt": "2026-08-19T05:56:33.518Z"
-    },
-    {
-      "id": "893b3a13-79c9-4846-bf4c-c39122f1e73d",
-      "name": "관리자 및 공통 API 타입 정의 (admin.ts, api.ts)",
-      "description": "관리자 대시보드(F012), 관리자 테이블(F013/F014 페이지네이션·검색), 통계 분석(F015 Recharts 시계열)에 필요한 타입을 lib/types/admin.ts에, Server Action/향후 API 라우트가 공통으로 반환할 결과 타입을 lib/types/api.ts에 작성한다. 두 파일 모두 event.ts/profile.ts에 의존하지 않는 독립 파일이다.",
-      "notes": "AdminDashboardMetrics의 필드명은 PRD.md 10번 섹션(관리자 대시보드 메인 페이지)의 지표 카드 7종을 그대로 반영한다(오늘/이번주/이번달/전체 이벤트, 오늘/이번주/전체 사용자 - PRD에는 '이번 달 가입한 사용자'가 명시되어 있지 않으므로 이벤트만 4단계, 사용자는 3단계로 비대칭임에 유의).",
-      "status": "completed",
-      "dependencies": [],
-      "createdAt": "2026-08-19T05:39:09.167Z",
-      "updatedAt": "2026-08-19T05:58:11.179Z",
-      "relatedFiles": [
-        {
-          "path": "lib/types/admin.ts",
-          "type": "CREATE",
-          "description": "관리자 대시보드 지표, 테이블 페이지네이션/쿼리, 통계 시계열 타입"
-        },
-        {
-          "path": "lib/types/api.ts",
-          "type": "CREATE",
-          "description": "공통 API 결과 판별 유니언 타입"
-        },
-        {
-          "path": "docs/PRD.md",
-          "type": "REFERENCE",
-          "description": "관리자 대시보드/테이블/통계 분석 페이지 상세 기능 섹션",
-          "lineStart": 297,
-          "lineEnd": 350
-        }
-      ],
-      "implementationGuide": "lib/types/admin.ts:\n- export interface AdminDashboardMetrics { todayEvents: number; weekEvents: number; monthEvents: number; totalEvents: number; todayUsers: number; weekUsers: number; totalUsers: number } (F012 지표 카드)\n- export interface PaginatedResult<T> { items: T[]; total: number; page: number; pageSize: number } (F013/F014 테이블 페이지네이션 공통 형태)\n- export interface TableQueryParams { search?: string; page: number; pageSize: number; sortBy?: string; sortOrder?: 'asc' | 'desc' } (F013/F014 검색/정렬 공통 파라미터)\n- export interface TimeSeriesPoint { date: string; value: number } (F015 Recharts Line Chart 입력 형태, 이벤트 생성 추이/사용자 증가 추이 공용)\n\nlib/types/api.ts:\n- export type ApiResult<T> = { success: true; data: T } | { success: false; error: string } (판별 유니언, Task 009~011 Server Action 반환값 재사용 목표)\n\n두 파일 모두 파일 상단에 어떤 Task(F012~F015, Task 009~011)를 위한 임시 타입인지 한국어 주석 1줄.",
-      "verificationCriteria": "lib/types/admin.ts, lib/types/api.ts가 생성되고 npm run type-check 통과. AdminDashboardMetrics 필드가 PRD 10번 섹션의 지표 카드 7종과 정확히 일치. ApiResult<T>가 success 필드로 판별 가능한 유니언으로 동작함(예: TS narrowing 확인).",
-      "analysisResult": "Gather 프로젝트 ROADMAP.md Phase 1 Task 002 \"타입 정의 및 인터페이스 설계\"의 최종 목표: lib/types/ 디렉터리를 신설하여 (1) profiles/events/event_participants 원격 Supabase 테이블(mcp__supabase__list_tables로 실측한 실제 컬럼)에 대응하는 프론트엔드 임시 도메인 타입, (2) PRD.md의 13개 페이지 요구사항에서 역산한 화면 조합용 뷰모델 타입, (3) 관리자 대시보드/테이블/통계용 타입, (4) Server Action 반환값에 재사용할 공통 API 결과 타입을 작성한다. 배럴 파일(index.ts)은 lib/supabase/의 기존 패턴(client.ts/server.ts/proxy.ts를 개별 경로로 import)을 따라 만들지 않는다. 전역 상태 관리 타입은 현재 상태관리 라이브러리가 프로젝트에 없으므로 이번 Task에서 별도 파일을 만들지 않고 범위를 명시적으로 제외한다(향후 Task 004/008에서 필요 시 추가). 모든 파일은 kebab-case, named export, 한국어 주석(타입 단위 1줄), @/ 경로 별칭을 따른다. 이 Task는 순수 타입 정의만 다루며 실제 Supabase 쿼리 코드(from(\"events\") 등)는 작성하지 않는다(Phase 2 더미 데이터 원칙 준수). 완료 후 npm run type-check와 npm run lint로 전체 검증한다.",
-      "summary": "lib/types/admin.ts와 lib/types/api.ts를 신규 생성했다. admin.ts는 AdminDashboardMetrics(F012 지표 카드, PRD 7종 필드를 이벤트 4단계/사용자 3단계 비대칭 그대로 반영), PaginatedResult<T>/TableQueryParams(F013/F014 테이블 공통), TimeSeriesPoint(F015 Recharts용)를 담았고, api.ts는 success 필드로 판별되는 ApiResult<T> 유니언을 담았다. 두 파일 모두 event.ts/profile.ts/event-view.ts에 의존하지 않는 독립 파일이며, 큰따옴표/세미콜론 등 .prettierrc.json 규칙과 named export, 한국어 주석 1줄 규칙을 준수했다. npm run type-check, npm run lint, npx prettier --check 모두 재검증 통과했고, lib/types/에 배럴 파일 없이 5개 파일(profile/event/event-view/admin/api)만 존재함을 Glob으로 최종 확인했다.",
-      "completedAt": "2026-08-19T05:58:11.176Z"
-    },
-    {
-      "id": "1a26cf29-f780-4aa4-b890-4bab0810f44e",
-      "name": "타입 정의 통합 검증",
-      "description": "lib/types/ 아래 5개 파일(profile.ts, event.ts, event-view.ts, admin.ts, api.ts) 전체를 대상으로 타입 체크와 린트를 수행하고, docs/ROADMAP.md의 Phase 1 체크리스트 및 Task 002 항목을 완료 처리한다.",
-      "notes": "이 Task는 코드를 새로 작성하지 않고 검증과 문서 갱신만 수행한다. shrimp-rules.md의 'ROADMAP.md에서 Task를 완료 처리(✅)할 때는 같은 커밋 안에서 실제 구현 코드도 함께 반영할 것' 원칙에 따라, 이미 앞선 3개 서브태스크에서 코드가 반영되어 있으므로 문서 갱신만 남은 상태다.",
-      "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "f98a0a99-6841-4c69-892d-8e23c84a5129"
-        },
-        {
-          "taskId": "4671363c-c0c0-432f-8c8e-4742dea7658e"
-        },
-        {
-          "taskId": "893b3a13-79c9-4846-bf4c-c39122f1e73d"
-        }
-      ],
-      "createdAt": "2026-08-19T05:39:09.167Z",
-      "updatedAt": "2026-08-19T06:00:09.699Z",
-      "relatedFiles": [
-        {
-          "path": "docs/ROADMAP.md",
+          "path": "package.json",
           "type": "TO_MODIFY",
-          "description": "Task 002 완료 표시 및 Phase 1 품질 체크리스트 갱신",
-          "lineStart": 49,
-          "lineEnd": 54
+          "description": "react-hook-form, @hookform/resolvers, zod 의존성 추가"
         },
         {
-          "path": "lib/types/profile.ts",
-          "type": "REFERENCE",
-          "description": "검증 대상"
+          "path": "lib/schemas/event.ts",
+          "type": "CREATE",
+          "description": "이벤트 생성/수정 폼 zod 스키마 및 EventFormValues 타입"
         },
         {
-          "path": "lib/types/event.ts",
-          "type": "REFERENCE",
-          "description": "검증 대상"
+          "path": "docs/guides/forms-react-hook-form.md",
+          "type": "TO_MODIFY",
+          "description": "미도입 경고 제거, 실제 아키텍처 승격 안내로 교체"
         },
         {
-          "path": "lib/types/event-view.ts",
+          "path": "shrimp-rules.md",
           "type": "REFERENCE",
-          "description": "검증 대상"
-        },
-        {
-          "path": "lib/types/admin.ts",
-          "type": "REFERENCE",
-          "description": "검증 대상"
-        },
-        {
-          "path": "lib/types/api.ts",
-          "type": "REFERENCE",
-          "description": "검증 대상"
+          "description": "39번 줄 RHF/Zod 도입 시점 규정 근거"
         }
       ],
-      "implementationGuide": "1. npm run type-check 실행 → 에러 0건 확인\n2. npm run lint 실행 → lib/types/ 관련 에러 0건 확인(신규 파일이 eslint-config-next 규칙 위반하지 않는지)\n3. docs/ROADMAP.md의 'Task 002: 타입 정의 및 인터페이스 설계' 제목에 완료 표시(✅)를 추가하고, 하위 5개 세부 항목 각각에도 완료 표시\n4. docs/ROADMAP.md '품질 체크리스트 > Phase 1' 섹션의 '프론트엔드 타입 정의 파일 구조 완성', '임시 데이터 모델 타입 정의 완료' 두 항목을 [x]로 변경\n5. lib/types/에 배럴 파일(index.ts)이 생성되지 않았음을 재확인(설계 결정: lib/supabase/ 패턴을 따라 배럴 파일 미사용)",
-      "verificationCriteria": "npm run type-check와 npm run lint가 모두 에러 없이 통과. docs/ROADMAP.md의 Task 002 항목과 Phase 1 품질 체크리스트 2개 항목이 체크 완료 상태로 갱신됨.",
-      "analysisResult": "Gather 프로젝트 ROADMAP.md Phase 1 Task 002 \"타입 정의 및 인터페이스 설계\"의 최종 목표: lib/types/ 디렉터리를 신설하여 (1) profiles/events/event_participants 원격 Supabase 테이블(mcp__supabase__list_tables로 실측한 실제 컬럼)에 대응하는 프론트엔드 임시 도메인 타입, (2) PRD.md의 13개 페이지 요구사항에서 역산한 화면 조합용 뷰모델 타입, (3) 관리자 대시보드/테이블/통계용 타입, (4) Server Action 반환값에 재사용할 공통 API 결과 타입을 작성한다. 배럴 파일(index.ts)은 lib/supabase/의 기존 패턴(client.ts/server.ts/proxy.ts를 개별 경로로 import)을 따라 만들지 않는다. 전역 상태 관리 타입은 현재 상태관리 라이브러리가 프로젝트에 없으므로 이번 Task에서 별도 파일을 만들지 않고 범위를 명시적으로 제외한다(향후 Task 004/008에서 필요 시 추가). 모든 파일은 kebab-case, named export, 한국어 주석(타입 단위 1줄), @/ 경로 별칭을 따른다. 이 Task는 순수 타입 정의만 다루며 실제 Supabase 쿼리 코드(from(\"events\") 등)는 작성하지 않는다(Phase 2 더미 데이터 원칙 준수). 완료 후 npm run type-check와 npm run lint로 전체 검증한다.",
-      "summary": "lib/types/의 5개 파일(profile.ts, event.ts, event-view.ts, admin.ts, api.ts) 전체에 대해 npm run type-check, npm run lint, npx prettier --check를 모두 재실행해 에러 0건을 확인했고 배럴 파일(index.ts)이 없음도 재확인했다. docs/ROADMAP.md의 Task 002 제목과 5개 세부 항목에 ✅ 표시 및 각 항목의 실제 구현 근거(파일명, 범위 제외 사유)를 추가했으며, Phase 1 품질 체크리스트의 '프론트엔드 타입 정의 파일 구조 완성', '임시 데이터 모델 타입 정의 완료' 두 항목을 [x]로 변경했다. Task 003 이후 섹션과 Phase 2~4는 건드리지 않았음을 직접 Read로 확인했다. 이로써 ROADMAP.md Phase 1 Task 002 전체가 코드와 문서 양쪽에서 완료 처리되었다.",
-      "completedAt": "2026-08-19T06:00:09.697Z"
+      "implementationGuide": "pseudocode:\n1. bash: npm install react-hook-form @hookform/resolvers zod\n2. lib/schemas/event.ts:\n   export const eventFormSchema = z.object({\n     title: z.string().min(1, '제목을 입력해주세요'),\n     location: z.string().min(1, '장소를 입력해주세요'),\n     eventDate: z.string().min(1, '날짜와 시간을 선택해주세요'),\n     description: z.string().optional(),\n     coverImageUrl: z.string().optional(),\n   })\n   export type EventFormValues = z.infer<typeof eventFormSchema>\n3. forms-react-hook-form.md 상단 경고 블록 수정(제거+대체 문구 삽입), 나머지 본문은 그대로 유지",
+      "verificationCriteria": "npm ls react-hook-form @hookform/resolvers zod로 설치 확인, npm run type-check와 npm run lint 통과, lib/schemas/event.ts가 다른 파일에서 import 가능한지 확인",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "npm install react-hook-form@7.85.0 @hookform/resolvers@5.9.1 zod@3.25.76를 설치하고 package.json에 반영됨을 확인(npm ls로 버전 검증 완료, zod는 기존 eslint-config-next 하위 의존성과 동일 버전으로 deduped됨). lib/schemas/event.ts를 신규 작성해 eventFormSchema(title/location/eventDate 필수, description/coverImageUrl 선택)와 EventFormValues 타입을 export했다. docs/guides/forms-react-hook-form.md 최상단 경고 블록을 \"실제 적용 범위: 클라이언트 검증까지\"로 교체하고, Server Actions 미적용 상태와 인증 폼과의 관계, 아직 미적용된 하위 절 목록을 명시했다(본문 코드 예시는 요구사항대로 그대로 유지). npm run type-check, npm run lint 모두 에러 없이 통과.",
+      "completedAt": "2026-08-19T07:38:39.255Z"
     },
     {
-      "id": "1b9239ad-63ec-469c-b47f-c54cc56aa8f6",
-      "name": "shadcn UI 컴포넌트 설치 및 Toaster 배선",
-      "description": "shadcn CLI로 avatar, dialog, select, skeleton, sonner 5개 컴포넌트를 components/ui/에 순차 설치하고, app/layout.tsx의 ThemeProvider 내부에 <Toaster />를 배선해 sonner 인프라를 활성화한다.",
-      "notes": "Form(react-hook-form 기반)은 CLAUDE.md에 RHF/zod 미설치로 명시되어 있고 ROADMAP Task 004에서 설치 예정이라 사용자 확인 하에 이번 범위에서 제외. separator도 이번 컴포넌트 구현에 불필요해 스킵. CLI는 동시 실행 시 충돌 가능하므로 순차 실행.",
+      "id": "5058b6a8-656a-4504-890c-8dc117b4a5b4",
+      "name": "shadcn form/textarea 컴포넌트 설치",
+      "description": "npx shadcn@latest add form textarea를 실행해 components/ui/form.tsx와 components/ui/textarea.tsx를 생성한다. shadcn form 컴포넌트는 react-hook-form 기반이므로 선행 Task에서 react-hook-form이 먼저 설치되어 있지 않아도 CLI가 자동으로 의존성을 추가하지만, 스키마 파일과 별개로 이 Task는 UI 프리미티브 설치만 담당한다.",
+      "notes": "CLI가 package.json에 react-hook-form을 중복 추가할 수 있으므로, Task 1과 버전이 어긋나지 않는지 npm ls로 재확인할 것.",
       "status": "completed",
       "dependencies": [],
-      "createdAt": "2026-08-19T06:51:21.665Z",
-      "updatedAt": "2026-08-19T06:55:52.048Z",
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T07:41:18.935Z",
       "relatedFiles": [
         {
-          "path": "components/ui/avatar.tsx",
+          "path": "components/ui/form.tsx",
           "type": "CREATE",
-          "description": "shadcn Avatar 프리미티브"
+          "description": "shadcn Form/FormField/FormItem/FormLabel/FormControl/FormMessage"
         },
         {
-          "path": "components/ui/dialog.tsx",
+          "path": "components/ui/textarea.tsx",
           "type": "CREATE",
-          "description": "shadcn Dialog 프리미티브"
-        },
-        {
-          "path": "components/ui/select.tsx",
-          "type": "CREATE",
-          "description": "shadcn Select 프리미티브"
-        },
-        {
-          "path": "components/ui/skeleton.tsx",
-          "type": "CREATE",
-          "description": "shadcn Skeleton 프리미티브"
-        },
-        {
-          "path": "components/ui/sonner.tsx",
-          "type": "CREATE",
-          "description": "shadcn sonner Toaster 컴포넌트"
-        },
-        {
-          "path": "app/layout.tsx",
-          "type": "TO_MODIFY",
-          "description": "ThemeProvider 내부에 <Toaster /> 마운트"
+          "description": "shadcn Textarea 컴포넌트"
         },
         {
           "path": "components.json",
           "type": "REFERENCE",
-          "description": "style/new-york, baseColor/neutral 설정 확인용"
+          "description": "new-york 스타일, neutral 베이스 컬러 설정 확인용"
         }
       ],
-      "implementationGuide": "pseudocode:\nnpx shadcn@latest add avatar\nnpx shadcn@latest add dialog\nnpx shadcn@latest add select\nnpx shadcn@latest add skeleton\nnpx shadcn@latest add sonner\n\n// app/layout.tsx\nimport { Toaster } from \"@/components/ui/sonner\";\n...\n<ThemeProvider attribute=\"class\" defaultTheme=\"system\" enableSystem disableTransitionOnChange>\n  {children}\n  <Toaster />\n</ThemeProvider>",
-      "verificationCriteria": "npx shadcn add 5회 실행 후 components/ui/에 5개 파일이 생성되고 package.json에 대응 Radix/sonner 의존성이 추가된다. app/layout.tsx의 ThemeProvider 내부 {children} 다음에 <Toaster />가 렌더되며 npm run build가 통과한다.",
-      "summary": "npx shadcn@latest add avatar/dialog/select/skeleton/sonner를 순차 실행해 components/ui/에 5개 파일을 생성했다. Avatar/Dialog/Select는 최신 shadcn 컨벤션에 따라 개별 @radix-ui/react-* 패키지가 아닌 통합 radix-ui 메타패키지(^1.6.7)로 설치되었고(기존 checkbox/dropdown-menu/label은 구방식 유지), sonner는 별도 sonner(^2.0.8) 패키지로 추가되었다. app/layout.tsx에 Toaster import를 추가하고 ThemeProvider 내부 {children} 다음 줄에 <Toaster />를 마운트했다. npm run type-check, npm run lint, npm run build 모두 에러 없이 통과했으며, 빌드 로그에서 27개 라우트가 정상적으로 생성됨을 확인했다. Form 컴포넌트는 계획대로 설치하지 않았다.",
-      "completedAt": "2026-08-19T06:55:52.046Z"
+      "implementationGuide": "pseudocode:\n1. bash: npx shadcn@latest add form textarea\n2. 설치 후 components/ui/form.tsx, components/ui/textarea.tsx 파일 존재 및 new-york 스타일 클래스 사용 여부 확인\n3. components.json의 aliases와 충돌 없는지 확인",
+      "verificationCriteria": "components/ui/form.tsx, components/ui/textarea.tsx 파일이 생성되었는지 확인, npm run type-check와 npm run lint 통과",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "npx shadcn@latest add form textarea로 components/ui/form.tsx(167줄, Form/FormField/FormItem/FormLabel/FormControl/FormMessage 등)와 components/ui/textarea.tsx를 신규 설치했다. shadcn 등록 컴포넌트 의존성 해석 과정에서 button.tsx/label.tsx 덮어쓰기 확인 프롬프트가 발생했는데, 둘 다 기존 Task 003 이전부터 쓰이던 파일이라 'n'으로 응답해 보존했다(yes n | npx shadcn add ... -y로 비대화형 처리, git status로 button.tsx/label.tsx가 변경되지 않았음을 확인). package.json은 Task 1에서 이미 react-hook-form/zod/@hookform/resolvers가 설치되어 있어 CLI가 추가 변경을 만들지 않았다(git diff로 확인). 신규 파일 2개는 npx prettier --write로 기존 코드베이스 포맷(세미콜론 등)에 맞췄다. npm run type-check, npm run lint 모두 통과.",
+      "completedAt": "2026-08-19T07:41:18.932Z"
     },
     {
-      "id": "fddaa3bf-d735-467f-99cf-67f2b8c24af0",
-      "name": "날짜 포맷 및 더미 데이터 유틸리티 구현",
-      "description": "lib/date-utils.ts(formatEventDate)와 lib/dummy-data.ts(DUMMY_PROFILES/DUMMY_EVENTS/DUMMY_EVENT_PARTICIPANTS seed 배열 및 get 접두사 조회 함수)를 신규 작성한다.",
-      "notes": "eventDate는 절대 날짜 하드코딩 금지, daysFromNow(offset) 상대 오프셋만 사용(시간이 지나도 상태 분포 유지). status는 반드시 eventDate로부터 계산하는 비export 헬퍼로 대입(수동 오타 방지). inviteCode는 고정 문자열 사용(즉석 Math.random 금지, SSR/CSR 하이드레이션 불일치 방지). '내가 만든/참여한' 필터링 헬퍼는 지금 만들지 않고 Task 004/005에서 필요 시 추가(YAGNI).",
+      "id": "a76fd9ae-2f68-495b-a650-12ab6d520ae9",
+      "name": "공용 EventForm 컴포넌트 구현",
+      "description": "components/event-form.tsx를 신규 구현한다. mode: \"create\" | \"edit\" prop과 defaultValues?: Partial<EventFormValues> prop을 받아 이벤트 생성/수정 페이지가 공유하는 단일 폼 컴포넌트로 만든다. react-hook-form의 useForm + zodResolver(eventFormSchema)로 title/location/eventDate/description/coverImageUrl 5개 필드를 shadcn Form/FormField/Input/Textarea로 렌더링한다. 제출 시 실제 Supabase 저장은 하지 않고(Phase 2 제약), sonner toast.success로 mode에 따라 \"이벤트가 생성되었습니다\" 또는 \"이벤트가 수정되었습니다\" 메시지만 표시하는 stub onSubmit을 구현한다. 제출 버튼 라벨도 mode에 따라 \"이벤트 만들기\"/\"저장\"으로 분기한다.",
+      "notes": "components/login-form.tsx의 Card 래핑 스타일을 참고하되 입력 상태는 useState 대신 react-hook-form으로 관리. 실제 저장 로직(Server Action)은 이번 범위에 포함하지 않음 — Task 009에서 onSubmit 내부만 교체될 예정임을 컴포넌트 상단에 한국어 주석으로 남긴다.",
       "status": "completed",
-      "dependencies": [],
-      "createdAt": "2026-08-19T06:51:21.665Z",
-      "updatedAt": "2026-08-19T07:00:31.266Z",
+      "dependencies": [
+        {
+          "taskId": "e198af04-c5df-43bb-a02a-76deb7505628"
+        },
+        {
+          "taskId": "5058b6a8-656a-4504-890c-8dc117b4a5b4"
+        }
+      ],
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T07:44:51.383Z",
       "relatedFiles": [
         {
-          "path": "lib/date-utils.ts",
+          "path": "components/event-form.tsx",
           "type": "CREATE",
-          "description": "이벤트 날짜 포맷 유틸리티"
+          "description": "생성/수정 공용 이벤트 폼 컴포넌트"
+        },
+        {
+          "path": "lib/schemas/event.ts",
+          "type": "DEPENDENCY",
+          "description": "eventFormSchema, EventFormValues"
+        },
+        {
+          "path": "components/ui/form.tsx",
+          "type": "DEPENDENCY",
+          "description": "Form/FormField/FormItem/FormMessage"
+        },
+        {
+          "path": "components/login-form.tsx",
+          "type": "REFERENCE",
+          "description": "기존 폼 레이아웃/Card 스타일 참고"
+        }
+      ],
+      "implementationGuide": "pseudocode:\n\"use client\"\nfunction EventForm({ mode, defaultValues }: { mode: 'create'|'edit'; defaultValues?: Partial<EventFormValues> }) {\n  const form = useForm<EventFormValues>({ resolver: zodResolver(eventFormSchema), defaultValues: { title:'', location:'', eventDate:'', description:'', coverImageUrl:'', ...defaultValues } })\n  function onSubmit(values: EventFormValues) {\n    toast.success(mode === 'create' ? '이벤트가 생성되었습니다' : '이벤트가 수정되었습니다')\n  }\n  return <Form {...form}><form onSubmit={form.handleSubmit(onSubmit)}>\n    <FormField name=\"title\" .../> // Input\n    <FormField name=\"location\" .../> // Input\n    <FormField name=\"eventDate\" .../> // Input type=\"datetime-local\"\n    <FormField name=\"description\" .../> // Textarea, optional\n    <FormField name=\"coverImageUrl\" .../> // Input, optional, placeholder로 '추후 업로드 기능 연동 예정' 안내\n    <Button type=\"submit\">{mode==='create' ? '이벤트 만들기' : '저장'}</Button>\n  </form></Form>\n}",
+      "verificationCriteria": "npm run type-check/lint 통과, dev server에서 필수 필드를 비운 채 제출 시 zod 에러 메시지가 필드 아래 표시되는지 확인, 정상 제출 시 sonner 토스트가 뜨는지 확인",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "components/event-form.tsx를 신규 구현했다. mode(\"create\"|\"edit\") + defaultValues prop을 받아 react-hook-form(useForm) + zodResolver(eventFormSchema)로 title/location/eventDate/description/coverImageUrl 5개 필드를 shadcn Form/FormField/Input/Textarea로 렌더링하고, Card로 감쌌다. onSubmit은 실제 저장 없이 console.log + sonner toast.success(mode별 메시지 분기)만 수행하는 stub이며, 파일 상단 주석에 Task 009에서 교체될 예정임을 명시했다. 제출 버튼 라벨도 mode에 따라 '이벤트 만들기'/'저장'으로 분기했다.\n\nTask 4가 아직 진행되지 않아 이 컴포넌트를 붙일 실제 페이지가 없고, (main) 하위 라우트는 proxy.ts의 인증 게이트 뒤에 있어 미로그인 상태로는 접근 불가능했다. 이를 우회하려 proxy.ts나 인증 로직을 건드리는 대신, 인증 예외 경로인 app/join/[invite_code]/page.tsx에 EventForm을 임시로 마운트해 Playwright로 실제 브라우저 동작을 검증한 뒤(빈 제출 시 3개 필드 모두 zod 에러 메시지 노출 확인, 정상 제출 시 '이벤트가 생성되었습니다' 토스트 노출 확인, 콘솔 에러 0건 확인) join 페이지를 원래 placeholder로 완전히 되돌렸다(git status로 event-form.tsx/스키마/shadcn 컴포넌트 외 다른 파일 변경 없음을 재확인). npm run type-check, npm run lint 모두 통과.",
+      "completedAt": "2026-08-19T07:44:51.381Z"
+    },
+    {
+      "id": "a3db8e23-feaa-4a36-931f-4081ae12bd98",
+      "name": "이벤트 생성/수정 페이지 구현",
+      "description": "app/(main)/events/new/page.tsx는 EventForm을 mode=\"create\"로 렌더링하는 얇은 페이지로 구현한다. app/(main)/events/[id]/edit/page.tsx는 Next.js 16 규칙에 따라 { params }: { params: Promise<{ id: string }> }를 받아 await params로 id를 추출하고, getDummyEventById(id)로 이벤트를 조회한다. 이벤트가 없으면 notFound()를 호출하고, event.createdBy !== \"profile-1\"이면(주최자가 아니면) 마찬가지로 notFound() 처리한다(권한 없는 사용자에게 수정 폼을 노출하지 않음). 조회된 Event를 EventFormValues 형태로 매핑해 EventForm defaultValues로 전달한다(eventDate는 ISO 문자열을 datetime-local input이 요구하는 'YYYY-MM-DDTHH:mm' 형식으로 변환하는 소규모 변환 함수 필요).",
+      "notes": "toDatetimeLocal 변환 함수는 lib/date-utils.ts에 추가하거나 edit/page.tsx 내부 로컬 함수로 두어도 됨(재사용 범위가 좁으면 로컬 함수 우선, project-structure.md의 '단일 책임' 원칙 참고).",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "a76fd9ae-2f68-495b-a650-12ab6d520ae9"
+        }
+      ],
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T07:49:17.559Z",
+      "relatedFiles": [
+        {
+          "path": "app/(main)/events/new/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "EventForm mode=create 렌더"
+        },
+        {
+          "path": "app/(main)/events/[id]/edit/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "더미 이벤트 조회 후 EventForm mode=edit 렌더, 권한 체크"
+        },
+        {
+          "path": "components/event-form.tsx",
+          "type": "DEPENDENCY",
+          "description": "공용 폼 컴포넌트"
         },
         {
           "path": "lib/dummy-data.ts",
-          "type": "CREATE",
-          "description": "더미 프로필/이벤트/참여자 시드 및 조회 함수"
-        },
-        {
-          "path": "lib/types/event.ts",
-          "type": "REFERENCE",
-          "description": "Event/EventParticipant/EventStatus 타입"
-        },
-        {
-          "path": "lib/types/profile.ts",
-          "type": "REFERENCE",
-          "description": "Profile 타입"
-        },
-        {
-          "path": "lib/types/event-view.ts",
-          "type": "REFERENCE",
-          "description": "EventCardSummary/EventParticipantWithProfile/EventWithParticipants 뷰모델 타입"
-        },
-        {
-          "path": "lib/utils.ts",
-          "type": "REFERENCE",
-          "description": "특화 유틸리티는 새 파일로 분리하는 기존 패턴 참고"
+          "type": "DEPENDENCY",
+          "description": "getDummyEventById"
         }
       ],
-      "implementationGuide": "pseudocode:\n// lib/date-utils.ts\nexport function formatEventDate(isoDate) {\n  const d = new Date(isoDate)\n  if (isNaN(d.getTime())) return isoDate\n  return new Intl.DateTimeFormat(\"ko-KR\", { year:\"numeric\", month:\"2-digit\", day:\"2-digit\", weekday:\"short\", hour:\"2-digit\", minute:\"2-digit\" }).format(d)\n}\n\n// lib/dummy-data.ts\nfunction daysFromNow(offsetDays, hour=12) { /* 오늘 기준 상대 ISO 문자열 */ }\nfunction resolveDummyStatus(eventDateIso) { /* eventDate로부터 upcoming/ongoing/ended 계산, 비export */ }\nexport const DUMMY_PROFILES: Profile[] = [...8명, null 필드 조합 다양화...]\nexport const DUMMY_EVENTS: Event[] = [...10개, daysFromNow 오프셋으로 ended4/ongoing2/upcoming4, coverImageUrl null 3건...]\nexport const DUMMY_EVENT_PARTICIPANTS: EventParticipant[] = [...이벤트별 host1+participant0~8...]\nexport function getDummyProfileById(id) {...}\nexport function getDummyEventById(id) {...}\nexport function getDummyEventCardSummaries(): EventCardSummary[] {...}\nexport function getDummyParticipantsWithProfile(eventId): EventParticipantWithProfile[] {...}\nexport function getDummyEventWithParticipants(eventId): EventWithParticipants | undefined {...}",
-      "verificationCriteria": "getDummyEventCardSummaries()가 upcoming/ongoing/ended를 각각 1개 이상 포함하고 participantCount가 이벤트마다 다르다. formatEventDate가 유효/무효 ISO 문자열 모두에서 오류 없이 문자열을 반환한다. npm run type-check가 통과한다.",
-      "summary": "lib/date-utils.ts(formatEventDate)와 lib/dummy-data.ts를 신규 작성했다. formatEventDate는 Intl.DateTimeFormat(\"ko-KR\")로 포맷하고 Invalid Date는 원본 문자열을 그대로 반환하도록 구현했으며 tsx 런타임 검증으로 유효/무효 케이스 모두 정상 동작을 확인했다. dummy-data.ts는 EVENT_SEEDS 중간 배열(offsetDays 기반)을 두어 DUMMY_EVENTS/DUMMY_EVENT_PARTICIPANTS가 daysFromNow(offset)로 상대 날짜를 공유하도록 설계했고, DUMMY_PROFILES 8명(fullName/username/avatarUrl null 조합 다양화), DUMMY_EVENTS 10개(offset -30~+60, coverImageUrl null 3건), DUMMY_EVENT_PARTICIPANTS(이벤트별 host+participant 1~8명)를 시드로 두었다. resolveDummyStatus는 날짜만 비교해 ongoing 판정 오차를 없앴다. get 접두사 조회 함수 5개(getDummyProfileById/getDummyEventById/getDummyEventCardSummaries/getDummyParticipantsWithProfile/getDummyEventWithParticipants)를 구현했다. tsx로 런타임 실행해 getDummyEventCardSummaries()가 ended 4/ongoing 2/upcoming 4로 세 상태를 모두 포함하고 participantCount가 3,6,1,5,3,8,2,7,2,8로 이벤트마다 다름을 실측 확인했다. npm run type-check, npm run lint, npx prettier --check 모두 통과했다(최초 작성 시 prettier 배열 줄바꿈 규칙과 어긋난 부분을 --write로 수정).",
-      "completedAt": "2026-08-19T07:00:31.264Z"
+      "implementationGuide": "pseudocode:\n// app/(main)/events/new/page.tsx\nexport default function NewEventPage() { return <div className=\"p-4\"><h1>이벤트 만들기</h1><EventForm mode=\"create\" /></div> }\n\n// app/(main)/events/[id]/edit/page.tsx\nexport default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {\n  const { id } = await params\n  const event = getDummyEventById(id)\n  if (!event || event.createdBy !== 'profile-1') notFound()\n  const defaultValues = { title: event.title, location: event.location, eventDate: toDatetimeLocal(event.eventDate), description: event.description ?? '', coverImageUrl: event.coverImageUrl ?? '' }\n  return <div className=\"p-4\"><h1>이벤트 수정</h1><EventForm mode=\"edit\" defaultValues={defaultValues} /></div>\n}",
+      "verificationCriteria": "npm run type-check/lint 통과, dev server에서 /events/new 접속해 빈 폼 렌더 확인, /events/event-1/edit(profile-1 소유) 접속해 기존 값 프리필 확인, /events/event-3/edit(profile-3 소유) 접속 시 404 확인",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "app/(main)/events/new/page.tsx를 EventForm mode=\"create\"를 렌더링하는 얇은 페이지로 구현했다(EventForm의 CardTitle이 이미 모드별 제목을 표시하므로 중복되는 페이지 레벨 h1은 추가하지 않음). app/(main)/events/[id]/edit/page.tsx는 Next.js 16 규칙대로 params: Promise<{id}>를 await하고, getDummyEventById로 조회해 없거나 event.createdBy !== 'profile-1'이면 notFound() 처리하며, toDatetimeLocal(로컬 함수)로 ISO 날짜를 datetime-local 형식으로 변환해 EventForm defaultValues에 매핑했다.\n\n구현 중 next.config.ts의 cacheComponents:true(dynamicIO) 제약을 실측으로 발견했다 — await params를 Suspense 없이 페이지 최상단에서 직접 호출하면 'Route encountered runtime data during prerendering' 콘솔 에러가 발생함을 확인(docs/guides/nextjs-16.md의 Cache Components 절이 이미 경고하던 내용). params를 읽는 부분을 EditEventContent 서브컴포넌트로 분리하고 <Suspense fallback={<EditEventFormSkeleton />}>으로 감싸는 구조로 리팩터링해 에러를 해소했다.\n\n인증 게이트 문제로 (main)/ 라우트에 직접 접근할 수 없어, Task 3과 동일하게 인증 예외 경로 app/join/[invite_code]/page.tsx에 동일 Suspense 구조를 임시로 옮겨 Playwright로 3가지 케이스를 실제 검증했다: (1) /join/event-1(profile-1 소유) → 제목/장소/날짜(2026-07-20T14:00)/설명/커버이미지 정확히 프리필 + 콘솔 에러 0건, (2) /join/event-3(profile-3 소유, 타인 이벤트) → 404 렌더, (3) /join/nonexistent-event(존재하지 않는 id) → 404 렌더. 검증 후 join 페이지를 git 원본과 동일하게 완전히 되돌렸다(git status로 확인, 의도한 4개 파일 변경 외 잔여 없음). npm run type-check, npm run lint 모두 통과.",
+      "completedAt": "2026-08-19T07:49:17.557Z"
     },
     {
-      "id": "62d79616-6ef2-4b74-9277-e486001b5851",
-      "name": "EventCard 및 EventCardSkeleton 컴포넌트 구현",
-      "description": "EventCardSummary를 props로 받는 components/event-card.tsx와 동일 레이아웃의 로딩 스켈레톤 components/event-card-skeleton.tsx를 구현한다.",
-      "notes": "next/image 대신 plain <img> 사용(next.config.ts에 images.remotePatterns 미설정, 이미지 최적화는 Task 014 별도 예정이라 선제 도입 안 함). 라우팅(Link 래핑)은 이 컴포넌트가 하지 않고 호출부(Task 004/005)가 담당. 상태/훅 없는 순수 표시 컴포넌트라 \"use client\" 불필요.",
+      "id": "0ff44e29-d928-42a5-b01e-a715edabd324",
+      "name": "이벤트 목록 페이지(주최자 뷰) 구현",
+      "description": "app/(main)/events/page.tsx를 Client Component로 구현한다. lib/dummy-data.ts의 getDummyEventCardSummaries()로 전체 이벤트를 가져오고, 상태 필터(전체/예정/진행중/종료) 버튼 그룹을 useState로 관리해 클라이언트 사이드로 필터링한다. 필터링된 EventCardSummary 배열을 EventCard 그리드(각 카드는 Link href={`/events/${id}`}로 상세 페이지 이동)로 렌더링한다. 필터 결과가 빈 배열이면 EmptyState(제목: \"조건에 맞는 이벤트가 없어요\", action: /events/new로 이동하는 \"이벤트 만들기\")를 표시한다.",
+      "notes": "getDummyEventCardSummaries()는 순수 함수이며 매 렌더마다 새 배열을 만들지만 항목이 10개뿐이라 useMemo 없이도 무방(과최적화 지양).",
       "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "1b9239ad-63ec-469c-b47f-c54cc56aa8f6"
-        },
-        {
-          "taskId": "fddaa3bf-d735-467f-99cf-67f2b8c24af0"
-        }
-      ],
-      "createdAt": "2026-08-19T06:51:21.665Z",
-      "updatedAt": "2026-08-19T07:03:08.933Z",
+      "dependencies": [],
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T07:51:12.505Z",
       "relatedFiles": [
+        {
+          "path": "app/(main)/events/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "필터+그리드 목록 UI"
+        },
         {
           "path": "components/event-card.tsx",
-          "type": "CREATE",
-          "description": "이벤트 카드 컴포넌트"
-        },
-        {
-          "path": "components/event-card-skeleton.tsx",
-          "type": "CREATE",
-          "description": "이벤트 카드 로딩 스켈레톤"
-        },
-        {
-          "path": "components/ui/card.tsx",
-          "type": "REFERENCE",
-          "description": "표준 shadcn Card 서브컴포넌트, 커스텀 변형 없이 재사용"
-        },
-        {
-          "path": "components/ui/badge.tsx",
-          "type": "REFERENCE",
-          "description": "표준 shadcn Badge, variant prop 재사용"
-        },
-        {
-          "path": "components/ui/skeleton.tsx",
           "type": "DEPENDENCY",
-          "description": "Skeleton 프리미티브(선행 태스크에서 설치)"
+          "description": "EventCard"
         },
-        {
-          "path": "lib/types/event-view.ts",
-          "type": "DEPENDENCY",
-          "description": "EventCardSummary 타입"
-        },
-        {
-          "path": "lib/date-utils.ts",
-          "type": "DEPENDENCY",
-          "description": "formatEventDate 함수"
-        }
-      ],
-      "implementationGuide": "pseudocode:\nexport const EVENT_STATUS_LABEL: Record<EventStatus,string> = { upcoming:\"예정\", ongoing:\"진행중\", ended:\"종료\" }\nexport const EVENT_STATUS_BADGE_VARIANT: Record<EventStatus,BadgeProps[\"variant\"]> = { upcoming:\"secondary\", ongoing:\"default\", ended:\"outline\" }\nexport function EventCard({ event, className }: { event: EventCardSummary; className?: string }) {\n  return (\n    <Card className={cn(\"overflow-hidden\", className)}>\n      {/* aspect-video 커버: coverImageUrl 있으면 <img>, 없으면 bg-muted+ImageOff 플레이스홀더 */}\n      <CardHeader>{/* CardTitle line-clamp-1 + Badge */}</CardHeader>\n      <CardContent>{/* MapPin+location, CalendarDays+formatEventDate, Users+participantCount */}</CardContent>\n    </Card>\n  )\n}\n// event-card-skeleton.tsx: 동일 Card 구조를 Skeleton 블록들로 재현, 개수/grid는 소유하지 않음",
-      "verificationCriteria": "coverImageUrl이 null인 경우를 포함한 모든 필드 조합에서 오류 없이 렌더링되고, upcoming/ongoing/ended 3가지 상태의 배지 variant/라벨이 서로 다르게 표시된다. npm run type-check와 npm run lint가 통과한다.",
-      "summary": "components/event-card.tsx와 components/event-card-skeleton.tsx를 신규 구현했다. EventCard는 EVENT_STATUS_LABEL/EVENT_STATUS_BADGE_VARIANT(Record<EventStatus,...>) 상수를 export하고, Card+Badge+lucide 아이콘(MapPin/CalendarDays/Users)을 조합해 coverImageUrl 유무에 따라 plain <img> 또는 ImageOff 플레이스홀더를 렌더한다. next/image 대신 plain img를 쓰는 이유(images.remotePatterns 미설정, Task 014에서 이미지 최적화 예정)를 eslint-disable-next-line 주석에 남겼다. EventCardSkeleton은 동일한 Card 구조를 Skeleton 블록으로 재현했다. react-dom/server의 renderToStaticMarkup으로 실제 렌더링을 검증한 결과, coverImageUrl null 케이스가 오류 없이 렌더되고 upcoming/ongoing/ended 3개 상태의 배지가 각각 variant(secondary/default/outline)와 라벨(예정/진행중/종료) 모두 다르게 표시됨을 확인했다. npm run type-check, npm run lint, npx prettier --check 모두 통과했다(최초 작성 시 Tailwind 클래스 순서가 prettier-plugin-tailwindcss 규칙과 달라 --write로 수정).",
-      "completedAt": "2026-08-19T07:03:08.929Z"
-    },
-    {
-      "id": "df8a1b13-f496-4c79-b9eb-cb02a9cec13b",
-      "name": "ParticipantCard 및 ParticipantCardSkeleton 컴포넌트 구현",
-      "description": "EventParticipantWithProfile을 props로 받는 components/participant-card.tsx와 동일 레이아웃의 로딩 스켈레톤 components/participant-card-skeleton.tsx를 구현한다.",
-      "notes": "displayName/getInitials 계산은 파일 로컬 비export 헬퍼로 둔다(다른 컴포넌트가 재사용할 필요 없음). Card는 CardHeader/CardContent 서브컴포넌트 없이 바로 flex row로 오버라이드해 EventCard와 다른 용도의 조합임을 명확히 한다.",
-      "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "1b9239ad-63ec-469c-b47f-c54cc56aa8f6"
-        },
-        {
-          "taskId": "fddaa3bf-d735-467f-99cf-67f2b8c24af0"
-        }
-      ],
-      "createdAt": "2026-08-19T06:51:21.665Z",
-      "updatedAt": "2026-08-19T07:06:20.758Z",
-      "relatedFiles": [
-        {
-          "path": "components/participant-card.tsx",
-          "type": "CREATE",
-          "description": "참여자 프로필 카드 컴포넌트"
-        },
-        {
-          "path": "components/participant-card-skeleton.tsx",
-          "type": "CREATE",
-          "description": "참여자 카드 로딩 스켈레톤"
-        },
-        {
-          "path": "components/ui/avatar.tsx",
-          "type": "DEPENDENCY",
-          "description": "Avatar/AvatarImage/AvatarFallback 프리미티브(선행 태스크에서 설치)"
-        },
-        {
-          "path": "components/ui/badge.tsx",
-          "type": "REFERENCE",
-          "description": "표준 shadcn Badge 재사용"
-        },
-        {
-          "path": "components/ui/skeleton.tsx",
-          "type": "DEPENDENCY",
-          "description": "Skeleton 프리미티브"
-        },
-        {
-          "path": "lib/types/event-view.ts",
-          "type": "DEPENDENCY",
-          "description": "EventParticipantWithProfile 타입"
-        }
-      ],
-      "implementationGuide": "pseudocode:\nexport const PARTICIPANT_ROLE_LABEL: Record<ParticipantRole,string> = { host:\"호스트\", participant:\"참여자\" }\nfunction getInitials(name) { /* 로컬 비export, 최대 2자, 한글/영문 대응 */ }\nexport function ParticipantCard({ participant, className }: { participant: EventParticipantWithProfile; className?: string }) {\n  const displayName = participant.profile.fullName ?? participant.profile.username ?? \"이름 없음\"\n  return (\n    <Card className={cn(\"flex items-center gap-3 p-4\", className)}>\n      <Avatar>{profile.avatarUrl && <AvatarImage src={...} />}<AvatarFallback>{getInitials(displayName)}</AvatarFallback></Avatar>\n      <div className=\"min-w-0 flex-1\">{/* displayName truncate + username 보조텍스트 */}</div>\n      <Badge variant={participant.role===\"host\"?\"default\":\"secondary\"}>{PARTICIPANT_ROLE_LABEL[participant.role]}</Badge>\n    </Card>\n  )\n}\n// participant-card-skeleton.tsx: 동일 Card row 구조를 원형 Skeleton(아바타)+텍스트 Skeleton 2줄+뱃지 자리 Skeleton으로 재현",
-      "verificationCriteria": "avatarUrl·fullName·username 유무의 모든 조합에서 깨지지 않고 이니셜 또는 \"이름 없음\" 폴백이 표시된다. npm run type-check와 npm run lint가 통과한다.",
-      "summary": "components/participant-card.tsx와 components/participant-card-skeleton.tsx를 신규 구현했다. PARTICIPANT_ROLE_LABEL 상수, 로컬 getInitials(한글은 첫 글자, 영문은 단어별 첫 글자 최대 2자) 헬퍼를 두었고, Avatar+AvatarFallback+Badge를 조합했다. react-dom/server의 renderToStaticMarkup으로 event-6의 참여자 8명(fullName null/username null/둘다 null/avatarUrl null 조합을 모두 포함) 전체를 실제 렌더링해 검증하는 과정에서, fullName·username이 모두 null인 케이스(\"이름 없음\" 폴백)에서 getInitials가 '이름 없음' 문자열 자체를 한글로 인식해 이니셜 '?' 대신 '이'를 렌더링하는 버그를 발견했다. 이를 getInitials 내부 매직 스트링 비교 대신 호출부(ParticipantCard)에서 hasName = Boolean(fullName ?? username) 플래그로 판단해 이름이 없으면 무조건 '?'를 렌더링하도록 수정했고, 재검증으로 전체 8개 조합과 '?' 폴백이 모두 정상 렌더링됨을 확인했다. participant-card-skeleton.tsx는 동일한 flex row 구조를 원형 Skeleton+텍스트 2줄+뱃지 자리로 재현했다. npm run type-check, npm run lint, npx prettier --check 모두 통과했다.",
-      "completedAt": "2026-08-19T07:06:20.752Z"
-    },
-    {
-      "id": "2222c09b-4378-4895-a400-f0d119557546",
-      "name": "EmptyState 컴포넌트 구현 및 전체 검증",
-      "description": "도메인 타입에 의존하지 않는 범용 빈 상태 컴포넌트 components/ui/empty-state.tsx를 구현하고, Task 003 전체 산출물에 대해 type-check/lint/build 최종 검증을 수행한다.",
-      "notes": "action은 href 또는 onClick 중 하나만 쓰는 것을 전제(둘 다 있으면 href 우선). onClick 핸들러를 직접 연결하므로 \"use client\" 필요. 아직 어떤 app/ 페이지에도 이번 Task의 컴포넌트들을 배선하지 않으므로(Task 004/005 몫) 빌드 시 페이지 레벨 영향은 없다.",
-      "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "62d79616-6ef2-4b74-9277-e486001b5851"
-        },
-        {
-          "taskId": "df8a1b13-f496-4c79-b9eb-cb02a9cec13b"
-        }
-      ],
-      "createdAt": "2026-08-19T06:51:21.665Z",
-      "updatedAt": "2026-08-19T07:08:11.612Z",
-      "relatedFiles": [
         {
           "path": "components/ui/empty-state.tsx",
-          "type": "CREATE",
-          "description": "범용 빈 상태 UI 컴포넌트"
+          "type": "DEPENDENCY",
+          "description": "빈 상태"
         },
         {
-          "path": "components/ui/button.tsx",
-          "type": "REFERENCE",
-          "description": "기존 Button, asChild 패턴으로 Link 래핑"
+          "path": "lib/dummy-data.ts",
+          "type": "DEPENDENCY",
+          "description": "getDummyEventCardSummaries"
         }
       ],
-      "implementationGuide": "pseudocode:\nexport interface EmptyStateAction { label: string; href?: string; onClick?: () => void }\nexport interface EmptyStateProps { icon?: LucideIcon; title: string; description?: string; action?: EmptyStateAction; className?: string }\nexport function EmptyState({ icon: Icon = Inbox, title, description, action, className }: EmptyStateProps) {\n  return (\n    <div className={cn(\"flex flex-col items-center justify-center py-12 text-center\", className)}>\n      {/* 아이콘 원형 배경 */}\n      <p className=\"font-semibold\">{title}</p>\n      {description && <p className=\"...\">{description}</p>}\n      {action && (action.href ? <Button asChild><Link href={action.href}>{action.label}</Link></Button> : <Button onClick={action.onClick}>{action.label}</Button>)}\n    </div>\n  )\n}\n\n최종 검증: npm run type-check && npm run lint && npm run build 순차 실행, 에러 0건 확인",
-      "verificationCriteria": "action 없음 / href 액션 / onClick 액션 세 경우 모두 정상 렌더링된다. npm run type-check, npm run lint, npm run build가 모두 에러 없이 통과해 Task 003 전체가 완료 기준을 만족한다.",
-      "summary": "components/ui/empty-state.tsx를 신규 구현했다. EmptyStateAction/EmptyStateProps 타입, icon(기본값 Inbox)+title+description+action(href 또는 onClick) props를 받는 범용 컴포넌트로, action.href가 있으면 Button asChild+next/link, 없고 onClick만 있으면 일반 Button onClick으로 분기한다. onClick 핸들러를 직접 연결하므로 \"use client\"를 명시했다. react-dom/server의 renderToStaticMarkup으로 action 없음/href 액션/onClick 액션 3가지 케이스를 모두 실제 렌더링해 title/description 표시, next/link의 href 속성, button 엘리먼트와 라벨이 각각 정상 출력됨을 확인했다(next/link가 App Router 컨텍스트 없이도 정적 렌더링에서 정상 동작함을 확인). Task 003 전체 최종 검증으로 npm run type-check, npm run lint, npm run build를 순차 실행해 모두 통과했으며 빌드 로그에서 27개 라우트가 에러 없이 생성됨을 확인했다. 이번 Task에서 만든 컴포넌트들은 어떤 app/ 페이지에도 아직 배선되지 않았으므로(Task 004/005 몫) 빌드에 페이지 레벨 영향은 없었다.",
-      "completedAt": "2026-08-19T07:08:11.610Z"
+      "implementationGuide": "pseudocode:\n\"use client\"\nconst FILTERS = [{ value: 'all', label: '전체' }, { value: 'upcoming', label: '예정' }, { value: 'ongoing', label: '진행중' }, { value: 'ended', label: '종료' }] as const\nfunction EventsPage() {\n  const [filter, setFilter] = useState<'all'|EventStatus>('all')\n  const events = getDummyEventCardSummaries()\n  const filtered = filter === 'all' ? events : events.filter(e => e.status === filter)\n  return <div className=\"p-4\">\n    <div className=\"flex gap-2\">{FILTERS.map(f => <button onClick={() => setFilter(f.value)} className={cn(..., filter===f.value && 'bg-primary text-primary-foreground')}>{f.label}</button>)}</div>\n    {filtered.length === 0 ? <EmptyState .../> : <div className=\"grid grid-cols-1 gap-4 sm:grid-cols-2\">{filtered.map(e => <Link key={e.id} href={`/events/${e.id}`}><EventCard event={e} /></Link>)}</div>}\n  </div>\n}",
+      "verificationCriteria": "npm run type-check/lint 통과, dev server에서 필터 버튼 클릭 시 카드 목록이 즉시 바뀌는지, 카드 클릭 시 /events/[id]로 이동하는지 확인",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "app/(main)/events/page.tsx를 Client Component로 구현했다. getDummyEventCardSummaries()로 10개 이벤트를 조회하고, 전체/예정/진행중/종료 4개 상태 필터를 useState로 관리해 Button(variant를 선택 상태에 따라 default/outline으로 토글)으로 필터 버튼 그룹을 구성했다. 필터링된 결과는 grid grid-cols-1 sm:grid-cols-2로 EventCard를 렌더링하며 각 카드를 Link href=`/events/${id}`로 감쌌다. 빈 결과일 때는 EmptyState(제목 '조건에 맞는 이벤트가 없어요', /events/new로 이동하는 '이벤트 만들기' 액션)를 표시한다.\n\n(main)/ 라우트가 인증 게이트 뒤에 있어, Task 3/4와 동일하게 인증 예외 경로 app/join/[invite_code]/page.tsx에서 이번엔 실제 events/page.tsx 기본 export를 그대로 import해(중복 코드 작성 없이) Playwright로 검증했다: 전체 10개 카드 렌더 + 콘솔 에러 0건 확인, '예정' 필터 클릭 시 4개 이벤트(event-7/8/9/10)만 남고 각 카드 href가 /events/event-N으로 정확함을 확인. 현재 더미 데이터는 3개 상태 모두에 이벤트가 있어 실제 빈 결과 케이스는 재현되지 않았으나, 삼항 분기 자체가 이미 검증된 EmptyState를 그대로 사용하므로 코드 검토로 충분하다고 판단했다. 검증 후 join 페이지를 원본으로 완전히 되돌렸다(git status로 확인). npm run type-check, npm run lint 모두 통과.",
+      "completedAt": "2026-08-19T07:51:12.502Z"
+    },
+    {
+      "id": "bdb8ea82-8a9d-4ad1-a6fb-e04de1bd32a2",
+      "name": "이벤트 상세 페이지 및 공유 액션 구현",
+      "description": "components/event-share-actions.tsx(Client Component)를 신규 구현한다. inviteCode: string을 props로 받아 \"링크 복사\" 버튼(navigator.clipboard.writeText로 `${window.location.origin}/join/${inviteCode}` 복사 후 sonner 토스트 \"초대 링크가 복사되었습니다\")과 \"카카오톡 공유\" 버튼(클릭 시 sonner 토스트 \"카카오톡 공유는 추후 지원 예정입니다\" — 실제 SDK 연동은 Task 009)을 렌더링한다. app/(main)/events/[id]/page.tsx는 Server Component(async)로 구현하며 await params로 id를 얻고 getDummyEventWithParticipants(id)로 조회, 없으면 notFound(). isHost = event.createdBy === \"profile-1\"을 계산해 true일 때만 수정 버튼(Link href=`/events/${id}/edit`), 삭제 버튼(Dialog로 확인창을 띄우되 실제 삭제 로직은 없음, 확인 시 sonner 토스트만), EventShareActions을 노출한다. 참여자 섹션은 event.participants를 ParticipantCard.map으로 렌더링한다.",
+      "notes": "삭제 확인 Dialog는 이미 설치된 components/ui/dialog.tsx를 재사용. 실제 삭제 API 호출은 Task 009 범위이므로 Dialog 확인 버튼 클릭 시 토스트만 띄우고 종료.",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T07:54:38.448Z",
+      "relatedFiles": [
+        {
+          "path": "components/event-share-actions.tsx",
+          "type": "CREATE",
+          "description": "초대 링크 복사/카카오톡 공유 버튼"
+        },
+        {
+          "path": "app/(main)/events/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "이벤트 상세, 주최자 권한 조건부 UI, 참여자 목록"
+        },
+        {
+          "path": "components/participant-card.tsx",
+          "type": "DEPENDENCY",
+          "description": "ParticipantCard"
+        },
+        {
+          "path": "components/ui/dialog.tsx",
+          "type": "DEPENDENCY",
+          "description": "삭제 확인 다이얼로그"
+        },
+        {
+          "path": "lib/dummy-data.ts",
+          "type": "DEPENDENCY",
+          "description": "getDummyEventWithParticipants"
+        }
+      ],
+      "implementationGuide": "pseudocode:\n// components/event-share-actions.tsx\n\"use client\"\nfunction EventShareActions({ inviteCode }: { inviteCode: string }) {\n  const copyLink = async () => { await navigator.clipboard.writeText(`${window.location.origin}/join/${inviteCode}`); toast.success('초대 링크가 복사되었습니다') }\n  const shareKakao = () => toast.info('카카오톡 공유는 추후 지원 예정입니다')\n  return <div className=\"flex gap-2\"><Button onClick={copyLink}>링크 복사</Button><Button variant=\"outline\" onClick={shareKakao}>카카오톡 공유</Button></div>\n}\n\n// app/(main)/events/[id]/page.tsx\nexport default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {\n  const { id } = await params\n  const event = getDummyEventWithParticipants(id)\n  if (!event) notFound()\n  const isHost = event.createdBy === 'profile-1'\n  return <div>...event info... {isHost && <><Link href={`/events/${id}/edit`}>수정</Link><DeleteEventDialog /><EventShareActions inviteCode={event.inviteCode} /></>}\n    <div className=\"space-y-2\">{event.participants.map(p => <ParticipantCard key={p.id} participant={p} />)}</div>\n  </div>\n}",
+      "verificationCriteria": "npm run type-check/lint 통과, dev server에서 /events/event-1(profile-1 소유, 참여자 2명)과 /events/event-3(profile-3 소유, 참여자 0명, EmptyState 필요 여부 검토)에서 주최자 전용 버튼 노출 차이 확인, 링크 복사 클릭 시 클립보드 반영 및 토스트 확인",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "components/event-share-actions.tsx를 신규 구현했다. EventShareActions(inviteCode prop, 링크 복사=navigator.clipboard.writeText+토스트, 카카오톡 공유=안내 토스트 stub)와 DeleteEventDialog(shadcn Dialog로 삭제 확인, 확인 시 토스트만 표시 후 자동 닫힘) 두 개를 함께 export했다(공유/삭제 모두 '주최자 전용 빠른 액션'이라는 하나의 관심사로 묶어 별도 파일을 늘리지 않음).\n\napp/(main)/events/[id]/page.tsx는 Task 4에서 확립한 Suspense 패턴(EventDetailContent를 async 서브컴포넌트로 분리해 <Suspense fallback={<EventDetailSkeleton/>}>로 감쌈)을 그대로 적용해 getDummyEventWithParticipants(id) 조회, 없으면 notFound(), isHost=event.createdBy==='profile-1'에 따라 수정/삭제/공유 버튼을 조건부 렌더링하고 ParticipantCard 목록을 표시하도록 구현했다. EVENT_STATUS_LABEL/EVENT_STATUS_BADGE_VARIANT는 event-card.tsx에서 export된 것을 그대로 재사용해 중복 정의하지 않았다.\n\n인증 게이트 우회를 위해 이번에도 /join/[invite_code]에 실제 default export(EventDetailPage)를 import하는 임시 래퍼로 검증했는데, 처음엔 래퍼가 자체적으로 params를 await하는 바람에 콘솔에 'Route encountered runtime data during prerendering' 에러가 떴다 — 이는 임시 래퍼의 실수였고, params.then()으로 값을 소비하지 않은 채 그대로 넘기도록 고치자 에러가 사라져 실제 events/[id]/page.tsx의 Suspense 경계가 올바름을 확인했다. Playwright로 다음을 모두 검증: (1) /events/event-1(호스트) → 수정/삭제/링크복사/카카오톡공유 버튼 노출, 참여자 3명(호스트 포함) 표시, 링크 복사 클릭 시 '초대 링크가 복사되었습니다' 토스트, 삭제 다이얼로그 열기→확인 클릭 시 '이벤트가 삭제되었습니다' 토스트 후 자동 닫힘, (2) /events/event-3(비호스트) → 호스트 전용 버튼 섹션 전체 미노출, 참여자 1명(호스트만) 정상 표시, (3) 존재하지 않는 id → 404, 전 과정 콘솔 에러 0건. 참고로 dummy-data 구조상 호스트가 항상 participants에 포함되므로 '참여자 0명' EmptyState 분기는 현재 데이터로는 실도달하지 않는 방어적 코드임을 확인했다(문제 아님, 안전장치로 유지). 검증 후 join 페이지를 원본으로 완전히 되돌렸다. npm run type-check, npm run lint 모두 통과.",
+      "completedAt": "2026-08-19T07:54:38.445Z"
+    },
+    {
+      "id": "eec9d525-aba5-4b59-a15c-2c354ea54ab4",
+      "name": "주최자 프로필 페이지 구현",
+      "description": "app/(main)/profile/page.tsx를 Server Component로 구현한다. lib/dummy-data.ts의 getDummyProfileById(\"profile-1\")로 더미 프로필을 조회해 Avatar(아바타 이미지 또는 이니셜), 이름(fullName ?? username), 이메일, 가입일(formatEventDate 재사용 또는 간단 포맷)을 카드 형태로 표시한다. 하단에 기존 components/logout-button.tsx를 그대로 import해 배치한다(신규 구현 금지, 재사용).",
+      "notes": "participant-card.tsx의 getInitials 로직과 유사한 이니셜 계산이 필요하면 중복 구현 대신 해당 로직을 참고해 동일 패턴을 따르되, export되어 있지 않으므로 함수를 별도 추출할지 profile 페이지 내부에 얇게 복제할지는 구현 시 재사용 비용을 고려해 결정(2곳뿐이면 추출보다 로컬 구현이 project-structure.md 컨벤션에 더 부합).",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T07:57:31.897Z",
+      "relatedFiles": [
+        {
+          "path": "app/(main)/profile/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "더미 프로필 표시 페이지"
+        },
+        {
+          "path": "components/logout-button.tsx",
+          "type": "DEPENDENCY",
+          "description": "기존 로그아웃 버튼 재사용"
+        },
+        {
+          "path": "lib/dummy-data.ts",
+          "type": "DEPENDENCY",
+          "description": "getDummyProfileById"
+        },
+        {
+          "path": "components/participant-card.tsx",
+          "type": "REFERENCE",
+          "description": "이니셜 계산 로직 참고"
+        }
+      ],
+      "implementationGuide": "pseudocode:\nexport default function ProfilePage() {\n  const profile = getDummyProfileById('profile-1')! // 시드 데이터에 항상 존재\n  return <div className=\"p-4 space-y-4\">\n    <Card><CardContent className=\"flex items-center gap-4 p-4\"><Avatar>...</Avatar><div><p>{profile.fullName ?? profile.username}</p><p className=\"text-muted-foreground text-sm\">{profile.email}</p></div></CardContent></Card>\n    <LogoutButton />\n  </div>\n}",
+      "verificationCriteria": "npm run type-check/lint 통과, dev server에서 /profile 접속 시 김태호(profile-1) 정보와 로그아웃 버튼이 보이는지 확인",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "app/(main)/profile/page.tsx를 Server Component로 구현했다. getDummyProfileById('profile-1')로 조회한 더미 프로필을 Card 안에 Avatar(이미지 있으면 AvatarImage, 없으면 이니셜 AvatarFallback)+이름(fullName ?? username)+이메일+가입일(formatEventDate 재사용)로 표시하고, 하단에 기존 components/logout-button.tsx의 LogoutButton을 그대로 import해 재사용했다(신규 구현 없음). getInitials는 participant-card.tsx와 동일 로직이지만 export되어 있지 않고 사용처가 2곳뿐이라 노트 지침대로 로컬 함수로 얇게 복제했다(조기 추상화 지양).\n\n동적 API를 쓰지 않는 페이지라 Task 4/6의 Suspense 패턴은 필요 없었다. 인증 게이트 우회를 위해 이번에도 /join/[invite_code]에서 실제 ProfilePage default export를 그대로 import해 Playwright로 검증했다: 김태호(profile-1)의 아바타/이름/이메일(taeho.kim@example.com)/가입일(2026.04.21 포맷)과 Logout 버튼이 모두 정상 렌더링됐고 콘솔 에러 0건이었다. 검증 후 join 페이지를 원본으로 완전히 되돌렸다(git status 확인). npm run type-check, npm run lint 모두 통과.",
+      "completedAt": "2026-08-19T07:57:31.894Z"
+    },
+    {
+      "id": "29ba3376-bb3e-4927-9405-b197497abaf0",
+      "name": "이벤트 만들기 FAB 컴포넌트 및 레이아웃 배선",
+      "description": "components/create-event-fab.tsx를 신규 구현한다. Link href=\"/events/new\"로 이동하는 원형 플로팅 액션 버튼으로, fixed 포지션(하단 내비게이션 위, 예: bottom-20 right-4 z-50)에 lucide-react Plus 아이콘을 표시한다. app/(main)/layout.tsx의 BottomNav 옆에 이 컴포넌트를 추가로 배선한다.",
+      "notes": "MobileShell이 max-w-[500px]로 중앙 정렬되므로 FAB의 fixed 좌표도 뷰포트 기준이 아니라 모바일 프레임 기준으로 보이도록 mobile-shell.tsx 구조(mx-auto max-w-[500px])와의 상호작용을 dev server에서 실제로 확인할 것(데스크톱 넓은 화면에서 FAB이 프레임 밖 화면 우측 끝에 붙는 문제가 없는지 검증 필요).",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T08:00:14.107Z",
+      "relatedFiles": [
+        {
+          "path": "components/create-event-fab.tsx",
+          "type": "CREATE",
+          "description": "이벤트 만들기 FAB"
+        },
+        {
+          "path": "app/(main)/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "FAB 배선"
+        },
+        {
+          "path": "components/bottom-nav.tsx",
+          "type": "REFERENCE",
+          "description": "기존 고정 내비게이션 위치/z-index 참고"
+        },
+        {
+          "path": "components/mobile-shell.tsx",
+          "type": "REFERENCE",
+          "description": "max-w-[500px] 프레임 구조"
+        }
+      ],
+      "implementationGuide": "pseudocode:\n// components/create-event-fab.tsx\nfunction CreateEventFab() {\n  return <Link href=\"/events/new\" className=\"fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg\"><Plus className=\"h-6 w-6\" /></Link>\n}\n\n// app/(main)/layout.tsx\n<MobileShell><div className=\"...pb-16\">{children}</div><CreateEventFab /><Suspense><BottomNav /></Suspense></MobileShell>",
+      "verificationCriteria": "npm run type-check/lint 통과, dev server에서 /events, /profile 등 (main) 하위 모든 페이지에 FAB이 BottomNav와 겹치지 않고 노출되는지, 데스크톱 뷰포트에서도 모바일 프레임 우측 하단에 위치하는지 확인",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "components/create-event-fab.tsx를 신규 구현하고 app/(main)/layout.tsx의 BottomNav 옆에 배선했다. pseudocode 그대로(fixed bottom-20 right-4)는 CSS fixed가 브라우저 뷰포트 기준으로 붙기 때문에, mobile-shell.tsx의 max-w-[500px] 중앙 정렬 프레임과 어긋나 데스크톱 넓은 화면에서 FAB이 실제 브라우저 우측 끝에 붙는 문제가 있음을 Task 설명의 Notes에서 미리 경고받았다. bottom-nav.tsx가 이미 쓰던 해법(fixed inset-x-0 + mx-auto max-w-[500px]로 프레임 폭을 재현하는 래퍼)을 그대로 적용해, pointer-events-none 래퍼 안에 absolute bottom-4 right-4로 실제 버튼을 배치하고 pointer-events-auto로 클릭 가능하게 했다.\n\n인증 게이트 우회를 위해 이번엔 (main)/layout.tsx 자체를 /join/[invite_code]에서 통째로 import해(MobileShell+CreateEventFab+BottomNav 전체 조합) 뷰포트 1280x800(데스크톱)으로 리사이즈 후 Playwright evaluate로 실측했다: FAB(left 818/right 874)이 뷰포트 우측 끝(1280)이 아니라 프레임 우측 경계(890=(1280-500)/2+500)에서 정확히 16px 안쪽에 위치했고, BottomNav(top 736)와 FAB(bottom 720) 사이에 16px 간격이 있어 겹치지 않음을 좌표로 확인했다. 스크린샷으로도 시각 재확인(FAB이 중앙 모바일 프레임 안에서 BottomNav 위에 정확히 위치, 프레임 밖으로 새지 않음). href=/events/new도 DOM 쿼리로 확인. 검증 후 join 페이지를 원본으로 완전히 되돌리고 임시 스크린샷 파일도 삭제했다(git status로 확인). npm run type-check, npm run lint 모두 통과.",
+      "completedAt": "2026-08-19T08:00:14.104Z"
+    },
+    {
+      "id": "c7044949-3abe-420e-ad0d-dd82cc53a624",
+      "name": "홈 랜딩 교체 및 Task 004 통합 검증",
+      "description": "components/hero.tsx의 Supabase/Next.js 튜토리얼 소개 내용을 Gather 서비스 소개(헤드라인, 한 줄 설명, 로그인 유도 CTA)로 교체한다. app/page.tsx에서 <SignUpUserSteps />/<ConnectSupabaseSteps /> 및 \"Next steps\" 튜토리얼 섹션(37~38번째 줄)을 제거한다(AuthButton/EnvVarWarning/ThemeSwitcher/nav 구조는 유지). 이후 npm run type-check, npm run lint, npm run build를 순서대로 실행해 Task 004 전체 산출물을 최종 검증하고, docs/ROADMAP.md의 Task 004 항목과 하위 8개 체크박스(66~81번째 줄)를 완료(✅)로 표시하며 Phase 2 완료 기준 체크리스트(251~258번째 줄) 중 Task 004 관련 항목도 갱신한다.",
+      "notes": "이 Task는 이전 8개 subtask가 모두 완료된 뒤 마지막에 실행해야 build가 전체 페이지 기준으로 정상 통과함을 보장할 수 있음. 인증 로직(AuthButton, EnvVarWarning) 자체는 Task 008 범위이므로 절대 수정하지 않는다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "a3db8e23-feaa-4a36-931f-4081ae12bd98"
+        },
+        {
+          "taskId": "0ff44e29-d928-42a5-b01e-a715edabd324"
+        },
+        {
+          "taskId": "bdb8ea82-8a9d-4ad1-a6fb-e04de1bd32a2"
+        },
+        {
+          "taskId": "eec9d525-aba5-4b59-a15c-2c354ea54ab4"
+        },
+        {
+          "taskId": "29ba3376-bb3e-4927-9405-b197497abaf0"
+        }
+      ],
+      "createdAt": "2026-08-19T07:35:04.261Z",
+      "updatedAt": "2026-08-19T08:06:53.790Z",
+      "relatedFiles": [
+        {
+          "path": "components/hero.tsx",
+          "type": "TO_MODIFY",
+          "description": "Gather 서비스 소개로 교체"
+        },
+        {
+          "path": "app/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "튜토리얼 스텝 섹션 제거"
+        },
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "Task 004 완료 체크 표시"
+        }
+      ],
+      "implementationGuide": "pseudocode:\n1. components/hero.tsx: 로고/외부 링크 섹션 제거, Gather 소개 카피(\"초대 링크 하나로 끝나는 모임 관리, Gather\")와 h1, /auth/login으로 이동하는 CTA 버튼으로 교체\n2. app/page.tsx: Suspense로 감싼 <SignUpUserSteps/ConnectSupabaseSteps> 블록과 'Next steps' <h2> 제거, Hero만 남김(AuthButton/EnvVarWarning/ThemeSwitcher 유지)\n3. bash: npm run type-check && npm run lint && npm run build\n4. docs/ROADMAP.md Task 004 라인들을 ✅ 표시로 갱신(docs:update-roadmap 스킬 활용 검토)",
+      "verificationCriteria": "npm run type-check, npm run lint, npm run build 모두 성공, dev server로 /, /events, /events/new, /events/[id], /events/[id]/edit, /profile 6개 경로 수동 스모크 확인, docs/ROADMAP.md Task 004 체크박스 반영 확인",
+      "analysisResult": "ROADMAP.md Task 004: 주최자 모바일 UI/UX 완성. Phase 2(더미 데이터 활용) 범위에서 홈 랜딩(F001), 내 이벤트 목록 주최자 뷰(F007/F008), 이벤트 생성/수정 폼(F001/F006/F009, react-hook-form+zod 신규 도입), 이벤트 상세 주최자 뷰(F002/F003/F005, 참여자 관리+초대 공유+수정삭제 권한 UI), 주최자 프로필(F011), 주최자 전용 FAB까지 완성한다. 실제 Supabase/Server Action 연동은 하지 않고 lib/dummy-data.ts만 사용하며 profile-1을 로그인한 주최자로 가정한다. Task 003이 만든 EventCard/ParticipantCard/EmptyState/스켈레톤 컴포넌트와 타입(event.ts/event-view.ts/profile.ts)을 그대로 재사용하고, bottom-nav.tsx는 이미 3탭이 구현되어 있으므로 재작성하지 않는다. RHF+Zod는 shrimp-rules.md 39번 줄의 승인에 따라 이번 Task에서 설치하되 Server Actions(app/actions/)는 Phase 2 제약(실제 DB 조기 연동 금지)에 따라 만들지 않고 클라이언트 stub(sonner 토스트)로 대체한다. Next.js 16 규칙상 [id] 라우트의 params는 Promise이므로 await params를 사용한다. 모든 텍스트는 한국어, 각 subtask 완료 후 npm run type-check와 npm run lint 통과가 공통 검증 기준이다.",
+      "summary": "components/hero.tsx를 Supabase/Next.js 튜토리얼 소개에서 Gather 서비스 소개(헤드라인 '초대 링크 하나로 끝나는 모임 관리, Gather', 한 줄 설명, /auth/login으로 이동하는 '시작하기' CTA 버튼)로 교체했다. app/page.tsx에서 ConnectSupabaseSteps/SignUpUserSteps import와 'Next steps' <h2> 섹션을 제거하고 Hero만 남겼다(AuthButton/EnvVarWarning/ThemeSwitcher/DeployButton/nav 구조는 지시대로 그대로 유지, 범위를 벗어난 브랜딩 텍스트 변경은 하지 않음). next-logo.tsx/supabase-logo.tsx는 이제 hero.tsx에서 미사용이 됐지만 파일 삭제는 이번 Task 범위 밖이라 보류했다.\n\nnpm run type-check, npm run lint, npm run build(프로덕션) 순서대로 모두 성공했다. 특히 build 결과에서 /events/[id]와 /events/[id]/edit이 ◐(Partial Prerender)로 표시되어, Task 4/6에서 도입한 Suspense 경계가 프로덕션 빌드에서도 올바르게 인식됨을 확인했다(Suspense 없이 await params만 했다면 빌드 실패 또는 전체 동적 처리됐을 것). 검증 기준의 6개 경로(/, /events, /events/new, /events/[id], /events/[id]/edit, /profile) 전부를 dev server에서 스모크 테스트했다 — '/'는 직접 접근(인증 예외 경로)해 새 Hero+콘솔 에러 0건 확인, 나머지 5개는 인증 게이트 때문에 이번에도 /join/[invite_code]에 각 페이지의 실제 default export를 순차로 import해 렌더 성공+콘솔 에러 0건을 확인한 뒤 매번 즉시 원복했다(git status로 최종 확인, join 페이지는 변경 목록에 없음).\n\ndocs/ROADMAP.md의 Task 004 제목과 8개 하위 체크박스를 모두 ✅로 표시하고, 기술 스택 체크리스트의 React Hook Form/Zod 항목도 [x]로 갱신했다(docs:update-roadmap 스킬 사용). Phase 2 완료 기준 체크리스트(모든 페이지 완성, 참여자 뷰 동작 등)는 Task 005/006이 아직 남아있어 실제로 미완료 상태이므로 성급하게 체크하지 않고 그대로 두었다. Task 003은 이번 요청 범위(Task 004)를 벗어나 손대지 않았다.",
+      "completedAt": "2026-08-19T08:06:53.785Z"
     }
   ]
 }
