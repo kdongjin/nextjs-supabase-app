@@ -57,7 +57,9 @@ app/
 - `route.ts`: Route Handler (예: `app/auth/confirm/route.ts`)
 - `loading.tsx` / `error.tsx` / `not-found.tsx`: 현재 미사용, 필요 시 해당 라우트 폴더에 추가
 
-로그인/회원가입 등 인증 관련 페이지는 반드시 `app/auth/` 아래에 배치하며, `login/`, `signup/` 처럼 루트 바로 아래에 두지 않습니다. `proxy.ts`가 `/`, `/auth/*`를 리다이렉트 예외 경로로 하드코딩하고 있으므로, 새 인증 페이지도 이 규칙을 따라야 합니다.
+로그인/회원가입 등 인증 관련 페이지는 반드시 `app/auth/` 아래에 배치하며, `login/`, `signup/` 처럼 루트 바로 아래에 두지 않습니다. `lib/supabase/proxy.ts`(루트 `proxy.ts`에서 호출)가 `/`, `/auth/*`를 리다이렉트 예외 경로로 하드코딩하고 있으므로, 새 인증 페이지도 이 규칙을 따라야 합니다.
+
+예외적으로 `app/admin/login/`(관리자 로그인)과 `app/join/[invite_code]/`(초대 링크 미리보기)는 `app/auth/` 밖에 있으면서도 비로그인 접근이 허용되어야 하는 페이지라서, `lib/supabase/proxy.ts`에 `/admin/login`, `/join` 두 경로가 별도 예외로 하드코딩되어 있습니다. `/admin/*`의 다른 하위 경로(`/admin/dashboard` 등)는 계속 보호 대상이므로 `/admin`이 아니라 `/admin/login`만 정확히 예외 처리한 것에 유의하세요. 이 두 경로를 옮기거나 이런 성격의 페이지를 새로 추가할 때는 `lib/supabase/proxy.ts`의 예외 조건도 함께 검토해야 합니다.
 
 ### components/ - 컴포넌트 조직
 

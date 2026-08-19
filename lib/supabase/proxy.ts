@@ -45,11 +45,17 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
+  const { pathname } = request.nextUrl;
+
+  // /admin/login(관리자 로그인)과 /join/[invite_code](초대 링크 미리보기)는
+  // 비로그인 상태에서도 접근 가능해야 하므로 리다이렉트 예외에 포함한다.
   if (
-    request.nextUrl.pathname !== "/" &&
+    pathname !== "/" &&
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/auth") &&
+    !pathname.startsWith("/admin/login") &&
+    !pathname.startsWith("/join")
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
