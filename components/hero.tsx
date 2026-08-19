@@ -1,44 +1,20 @@
-import { NextLogo } from "./next-logo";
-import { SupabaseLogo } from "./supabase-logo";
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <div className="flex flex-col items-center gap-16">
-      <div className="flex items-center justify-center gap-8">
-        <a
-          href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <SupabaseLogo />
-        </a>
-        <span className="h-6 rotate-45 border-l" />
-        <a href="https://nextjs.org/" target="_blank" rel="noreferrer">
-          <NextLogo />
-        </a>
-      </div>
-      <h1 className="sr-only">Supabase and Next.js Starter Template</h1>
-      <p className="mx-auto max-w-xl text-center text-3xl !leading-tight lg:text-4xl">
-        The fastest way to build apps with{" "}
-        <a
-          href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-          target="_blank"
-          className="font-bold hover:underline"
-          rel="noreferrer"
-        >
-          Supabase
-        </a>{" "}
-        and{" "}
-        <a
-          href="https://nextjs.org/"
-          target="_blank"
-          className="font-bold hover:underline"
-          rel="noreferrer"
-        >
-          Next.js
-        </a>
+    <div className="flex flex-col items-center gap-6 text-center">
+      <h1 className="max-w-xl text-3xl !leading-tight lg:text-4xl">
+        초대 링크 하나로 끝나는 모임 관리, <span className="font-bold">Gather</span>
+      </h1>
+      <p className="mx-auto max-w-xl text-muted-foreground">
+        제목, 날짜, 장소만 입력하면 이벤트가 만들어지고 초대 링크 하나로 참여자를 모을 수 있어요.
       </p>
-      <div className="my-8 w-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent p-[1px]" />
+      <Button asChild size="lg">
+        <Link href="/auth/login">시작하기</Link>
+      </Button>
+      <div className="my-2 w-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent p-[1px]" />
     </div>
   );
 }
