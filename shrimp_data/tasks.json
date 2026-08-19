@@ -181,6 +181,181 @@
       "analysisResult": "Task 001: Gather 서비스의 Next.js 16 App Router 라우트 골격(13개 페이지 placeholder)과 레이아웃 골격(모바일 하단 내비게이션 / 관리자 사이드바)을 구축한다. 범위는 라우팅·레이아웃 구조뿐이며 실제 UI/데이터/인증 로직은 이후 Task(003~006 UI, 008 인증)로 미룬다. 라우트 구조: 사용자 영역은 app/(main)/ Route Group(URL 영향 없음, BottomNav 레이아웃), 관리자 대시보드류는 app/admin/(dashboard)/ Route Group(AdminSidebar 레이아웃), 관리자 로그인은 app/admin/login/으로 사이드바 레이아웃 형제 분리, 초대 참여는 app/join/[invite_code]/에 레이아웃 없이 배치. 기존 app/protected/, app/instruments/, app/auth/*, app/page.tsx는 건드리지 않는다. proxy.ts도 이번 Task에서 수정하지 않는다(Task 008에서 처리 예정, 계획 노트로만 남김). 모든 page.tsx는 최소 placeholder 서버 컴포넌트, kebab-case 파일명, docs/guides/project-structure.md 컨벤션 준수.",
       "summary": "app/admin/login/page.tsx(형제 세그먼트, 사이드바 미상속)와 app/admin/(dashboard)/ 하위 dashboard, events, users, analytics 4개 페이지를 최소 placeholder 서버 컴포넌트로 생성 완료. (dashboard) Route Group 하위 페이지들은 AdminSidebar 레이아웃을 상속받고, login은 루트 layout.tsx만 적용된다.",
       "completedAt": "2026-08-18T07:58:42.642Z"
+    },
+    {
+      "id": "f98a0a99-6841-4c69-892d-8e23c84a5129",
+      "name": "핵심 도메인 타입 정의 (Profile, Event, EventParticipant)",
+      "description": "원격 Supabase profiles/events/event_participants 테이블의 실제 컬럼(mcp__supabase__list_tables 실측 결과)을 1:1로 반영한 프론트엔드 임시 도메인 타입을 lib/types/profile.ts와 lib/types/event.ts에 작성한다. PRD.md의 'name' 필드는 실제 컬럼과 다르므로 사용하지 않고, 실제 컬럼명(username, full_name)을 그대로 쓴다.",
+      "notes": "PRD.md 데이터 모델 표를 그대로 베끼지 말고, 이번 대화에서 mcp__supabase__list_tables(verbose:true)로 확인한 실제 컬럼(특히 profiles.username/full_name, nullable 여부, role/status의 check 제약)을 기준으로 타입을 작성할 것.",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-19T05:39:09.167Z",
+      "updatedAt": "2026-08-19T05:53:31.206Z",
+      "relatedFiles": [
+        {
+          "path": "lib/types/profile.ts",
+          "type": "CREATE",
+          "description": "Profile 도메인 타입 및 UserRole 유니언 타입"
+        },
+        {
+          "path": "lib/types/event.ts",
+          "type": "CREATE",
+          "description": "Event/EventParticipant 도메인 타입 및 EventStatus/ParticipantRole 유니언 타입"
+        },
+        {
+          "path": "docs/PRD.md",
+          "type": "REFERENCE",
+          "description": "데이터 모델 섹션(단, 실제 컬럼명은 list_tables 결과를 우선)",
+          "lineStart": 353,
+          "lineEnd": 406
+        },
+        {
+          "path": "lib/supabase/client.ts",
+          "type": "REFERENCE",
+          "description": "기존 lib/ 하위 파일의 named export 및 파일 구성 스타일 참고"
+        }
+      ],
+      "implementationGuide": "lib/types/profile.ts:\n- export type UserRole = 'user' | 'admin'\n- export interface Profile { id: string; email: string; username: string | null; fullName: string | null; avatarUrl: string | null; role: UserRole; createdAt: string; updatedAt: string }\n  주: DB 컬럼은 snake_case(full_name, avatar_url, created_at, updated_at)이지만 프론트엔드 타입은 기존 컴포넌트 관례(camelCase 변수명)에 맞춰 camelCase 필드명을 쓰고, 파일 상단 주석에 'DB 컬럼명과 camelCase로 매핑됨(추후 실제 fetch 레이어에서 변환)'을 1줄로 명시한다.\n- 파일 최상단에 '임시 프론트엔드 타입, Task 007에서 실제 DB 스키마 타입으로 교체 예정' 한국어 주석 1줄 추가.\n\nlib/types/event.ts:\n- export type EventStatus = 'upcoming' | 'ongoing' | 'ended'\n- export type ParticipantRole = 'host' | 'participant'\n- export interface Event { id: string; title: string; description: string | null; location: string; eventDate: string; coverImageUrl: string | null; inviteCode: string; status: EventStatus; createdBy: string; createdAt: string; updatedAt: string }\n- export interface EventParticipant { id: string; eventId: string; userId: string; role: ParticipantRole; joinedAt: string }\n- 동일하게 파일 상단 임시 타입 주석 추가.\n\n두 파일 모두 상호 import 없이 독립적으로 작성 가능(순환 참조 없음).",
+      "verificationCriteria": "lib/types/profile.ts, lib/types/event.ts가 생성되고 npx tsc --noEmit(npm run type-check) 통과. 모든 필드가 실제 Supabase profiles/events/event_participants 컬럼과 1:1 대응됨을 mcp__supabase__list_tables 결과와 대조하여 확인. kebab-case 파일명, named export, 한국어 주석 준수.",
+      "analysisResult": "Gather 프로젝트 ROADMAP.md Phase 1 Task 002 \"타입 정의 및 인터페이스 설계\"의 최종 목표: lib/types/ 디렉터리를 신설하여 (1) profiles/events/event_participants 원격 Supabase 테이블(mcp__supabase__list_tables로 실측한 실제 컬럼)에 대응하는 프론트엔드 임시 도메인 타입, (2) PRD.md의 13개 페이지 요구사항에서 역산한 화면 조합용 뷰모델 타입, (3) 관리자 대시보드/테이블/통계용 타입, (4) Server Action 반환값에 재사용할 공통 API 결과 타입을 작성한다. 배럴 파일(index.ts)은 lib/supabase/의 기존 패턴(client.ts/server.ts/proxy.ts를 개별 경로로 import)을 따라 만들지 않는다. 전역 상태 관리 타입은 현재 상태관리 라이브러리가 프로젝트에 없으므로 이번 Task에서 별도 파일을 만들지 않고 범위를 명시적으로 제외한다(향후 Task 004/008에서 필요 시 추가). 모든 파일은 kebab-case, named export, 한국어 주석(타입 단위 1줄), @/ 경로 별칭을 따른다. 이 Task는 순수 타입 정의만 다루며 실제 Supabase 쿼리 코드(from(\"events\") 등)는 작성하지 않는다(Phase 2 더미 데이터 원칙 준수). 완료 후 npm run type-check와 npm run lint로 전체 검증한다.",
+      "summary": "lib/types/profile.ts와 lib/types/event.ts를 신규 생성했다. mcp__supabase__list_tables 실측 결과(profiles.username/full_name, events.status check 제약 등)를 PRD.md보다 우선해 필드명을 결정했고, DB snake_case 컬럼을 camelCase 필드로 매핑한다는 점을 파일 상단에 한국어 주석으로 명시했다. UserRole/EventStatus/ParticipantRole 유니언 타입과 Profile/Event/EventParticipant 인터페이스를 named export로 작성했으며 두 파일은 상호 import 없는 독립 파일이다. 배럴 파일(index.ts)은 lib/supabase/ 기존 패턴을 따라 생성하지 않았다. 최초 구현본이 작은따옴표를 사용해 .prettierrc.json(singleQuote:false)과 어긋났던 것을 npx prettier --write로 수정했고, npm run type-check와 npm run lint 모두 재검증 통과했다.",
+      "completedAt": "2026-08-19T05:53:31.202Z"
+    },
+    {
+      "id": "4671363c-c0c0-432f-8c8e-4742dea7658e",
+      "name": "이벤트 뷰모델 타입 정의 (event-view.ts)",
+      "description": "PRD.md 13개 페이지 요구사항(F005 실시간 참여자 목록, F007/F008 이벤트 목록+상태 필터+참여자 수)에서 역산한 화면 조합용 뷰모델 타입을 lib/types/event-view.ts에 작성한다. Event/Profile 원본 타입을 조합해 컴포넌트가 바로 소비할 수 있는 형태로 만든다.",
+      "notes": "이 파일은 event.ts와 profile.ts에 의존하므로 반드시 그 두 파일이 먼저 존재해야 타입 체크가 통과한다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "f98a0a99-6841-4c69-892d-8e23c84a5129"
+        }
+      ],
+      "createdAt": "2026-08-19T05:39:09.167Z",
+      "updatedAt": "2026-08-19T05:56:33.523Z",
+      "relatedFiles": [
+        {
+          "path": "lib/types/event-view.ts",
+          "type": "CREATE",
+          "description": "이벤트 상세/카드 화면 조합용 뷰모델 타입"
+        },
+        {
+          "path": "lib/types/event.ts",
+          "type": "DEPENDENCY",
+          "description": "Event, EventParticipant 원본 타입"
+        },
+        {
+          "path": "lib/types/profile.ts",
+          "type": "DEPENDENCY",
+          "description": "Profile 원본 타입"
+        },
+        {
+          "path": "docs/PRD.md",
+          "type": "REFERENCE",
+          "description": "내 이벤트 목록/이벤트 상세 페이지 상세 기능 섹션",
+          "lineStart": 199,
+          "lineEnd": 240
+        }
+      ],
+      "implementationGuide": "lib/types/event-view.ts:\n- import type { Event } from '@/lib/types/event'\n- import type { Profile } from '@/lib/types/profile'\n- export interface EventParticipantWithProfile { id: string; role: 'host' | 'participant'; joinedAt: string; profile: Pick<Profile, 'id' | 'username' | 'fullName' | 'avatarUrl'> } (이벤트 상세 페이지의 실시간 참여자 목록용, F005)\n- export interface EventWithParticipants extends Event { participants: EventParticipantWithProfile[]; participantCount: number } (이벤트 상세 페이지 전체 데이터, F001/F002/F003/F005/F006/F008/F009)\n- export interface EventCardSummary extends Pick<Event, 'id' | 'title' | 'eventDate' | 'coverImageUrl' | 'status' | 'location'> { participantCount: number } (내 이벤트 목록 카드용, F007/F008 - 목록 페이지는 전체 Event를 다 쓰지 않고 카드에 필요한 필드만 사용)\n- 각 interface 위에 어떤 페이지/기능(F00x)을 위한 타입인지 한국어 주석 1줄.\n\nProfile 원본을 그대로 노출하지 않고 Pick으로 필요한 필드만 좁혀서, 이메일 같은 민감 정보가 참여자 목록 뷰모델에 섞이지 않도록 한다(email은 프로필 페이지 F011 전용 필드).",
+      "verificationCriteria": "lib/types/event-view.ts가 생성되고, @/lib/types/event·@/lib/types/profile을 정상 import하며 npm run type-check 통과. EventCardSummary가 Profile의 email 등 민감 필드를 노출하지 않음을 코드 리뷰로 확인.",
+      "analysisResult": "Gather 프로젝트 ROADMAP.md Phase 1 Task 002 \"타입 정의 및 인터페이스 설계\"의 최종 목표: lib/types/ 디렉터리를 신설하여 (1) profiles/events/event_participants 원격 Supabase 테이블(mcp__supabase__list_tables로 실측한 실제 컬럼)에 대응하는 프론트엔드 임시 도메인 타입, (2) PRD.md의 13개 페이지 요구사항에서 역산한 화면 조합용 뷰모델 타입, (3) 관리자 대시보드/테이블/통계용 타입, (4) Server Action 반환값에 재사용할 공통 API 결과 타입을 작성한다. 배럴 파일(index.ts)은 lib/supabase/의 기존 패턴(client.ts/server.ts/proxy.ts를 개별 경로로 import)을 따라 만들지 않는다. 전역 상태 관리 타입은 현재 상태관리 라이브러리가 프로젝트에 없으므로 이번 Task에서 별도 파일을 만들지 않고 범위를 명시적으로 제외한다(향후 Task 004/008에서 필요 시 추가). 모든 파일은 kebab-case, named export, 한국어 주석(타입 단위 1줄), @/ 경로 별칭을 따른다. 이 Task는 순수 타입 정의만 다루며 실제 Supabase 쿼리 코드(from(\"events\") 등)는 작성하지 않는다(Phase 2 더미 데이터 원칙 준수). 완료 후 npm run type-check와 npm run lint로 전체 검증한다.",
+      "summary": "lib/types/event-view.ts를 신규 생성했다. event.ts/profile.ts를 @/lib/types 경로로 import해 EventParticipantWithProfile(F005 실시간 참여자 목록), EventWithParticipants(F001/F002/F003/F005/F006/F008/F009 이벤트 상세), EventCardSummary(F007/F008 목록 카드) 세 뷰모델 인터페이스를 작성했다. 설계 의도대로 EventParticipantWithProfile.profile은 Pick<Profile,\"id\"|\"username\"|\"fullName\"|\"avatarUrl\">로 좁혀 email 등 민감 필드를 노출하지 않았고, EventCardSummary도 Event 전체가 아닌 카드 필요 필드만 Pick했다. 큰따옴표/세미콜론 등 .prettierrc.json 규칙, named export, 한국어 주석 1줄 규칙을 모두 준수했으며 배럴 파일은 생성하지 않았다. npm run type-check, npm run lint, npx prettier --check 모두 재검증 통과했다.",
+      "completedAt": "2026-08-19T05:56:33.518Z"
+    },
+    {
+      "id": "893b3a13-79c9-4846-bf4c-c39122f1e73d",
+      "name": "관리자 및 공통 API 타입 정의 (admin.ts, api.ts)",
+      "description": "관리자 대시보드(F012), 관리자 테이블(F013/F014 페이지네이션·검색), 통계 분석(F015 Recharts 시계열)에 필요한 타입을 lib/types/admin.ts에, Server Action/향후 API 라우트가 공통으로 반환할 결과 타입을 lib/types/api.ts에 작성한다. 두 파일 모두 event.ts/profile.ts에 의존하지 않는 독립 파일이다.",
+      "notes": "AdminDashboardMetrics의 필드명은 PRD.md 10번 섹션(관리자 대시보드 메인 페이지)의 지표 카드 7종을 그대로 반영한다(오늘/이번주/이번달/전체 이벤트, 오늘/이번주/전체 사용자 - PRD에는 '이번 달 가입한 사용자'가 명시되어 있지 않으므로 이벤트만 4단계, 사용자는 3단계로 비대칭임에 유의).",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-19T05:39:09.167Z",
+      "updatedAt": "2026-08-19T05:58:11.179Z",
+      "relatedFiles": [
+        {
+          "path": "lib/types/admin.ts",
+          "type": "CREATE",
+          "description": "관리자 대시보드 지표, 테이블 페이지네이션/쿼리, 통계 시계열 타입"
+        },
+        {
+          "path": "lib/types/api.ts",
+          "type": "CREATE",
+          "description": "공통 API 결과 판별 유니언 타입"
+        },
+        {
+          "path": "docs/PRD.md",
+          "type": "REFERENCE",
+          "description": "관리자 대시보드/테이블/통계 분석 페이지 상세 기능 섹션",
+          "lineStart": 297,
+          "lineEnd": 350
+        }
+      ],
+      "implementationGuide": "lib/types/admin.ts:\n- export interface AdminDashboardMetrics { todayEvents: number; weekEvents: number; monthEvents: number; totalEvents: number; todayUsers: number; weekUsers: number; totalUsers: number } (F012 지표 카드)\n- export interface PaginatedResult<T> { items: T[]; total: number; page: number; pageSize: number } (F013/F014 테이블 페이지네이션 공통 형태)\n- export interface TableQueryParams { search?: string; page: number; pageSize: number; sortBy?: string; sortOrder?: 'asc' | 'desc' } (F013/F014 검색/정렬 공통 파라미터)\n- export interface TimeSeriesPoint { date: string; value: number } (F015 Recharts Line Chart 입력 형태, 이벤트 생성 추이/사용자 증가 추이 공용)\n\nlib/types/api.ts:\n- export type ApiResult<T> = { success: true; data: T } | { success: false; error: string } (판별 유니언, Task 009~011 Server Action 반환값 재사용 목표)\n\n두 파일 모두 파일 상단에 어떤 Task(F012~F015, Task 009~011)를 위한 임시 타입인지 한국어 주석 1줄.",
+      "verificationCriteria": "lib/types/admin.ts, lib/types/api.ts가 생성되고 npm run type-check 통과. AdminDashboardMetrics 필드가 PRD 10번 섹션의 지표 카드 7종과 정확히 일치. ApiResult<T>가 success 필드로 판별 가능한 유니언으로 동작함(예: TS narrowing 확인).",
+      "analysisResult": "Gather 프로젝트 ROADMAP.md Phase 1 Task 002 \"타입 정의 및 인터페이스 설계\"의 최종 목표: lib/types/ 디렉터리를 신설하여 (1) profiles/events/event_participants 원격 Supabase 테이블(mcp__supabase__list_tables로 실측한 실제 컬럼)에 대응하는 프론트엔드 임시 도메인 타입, (2) PRD.md의 13개 페이지 요구사항에서 역산한 화면 조합용 뷰모델 타입, (3) 관리자 대시보드/테이블/통계용 타입, (4) Server Action 반환값에 재사용할 공통 API 결과 타입을 작성한다. 배럴 파일(index.ts)은 lib/supabase/의 기존 패턴(client.ts/server.ts/proxy.ts를 개별 경로로 import)을 따라 만들지 않는다. 전역 상태 관리 타입은 현재 상태관리 라이브러리가 프로젝트에 없으므로 이번 Task에서 별도 파일을 만들지 않고 범위를 명시적으로 제외한다(향후 Task 004/008에서 필요 시 추가). 모든 파일은 kebab-case, named export, 한국어 주석(타입 단위 1줄), @/ 경로 별칭을 따른다. 이 Task는 순수 타입 정의만 다루며 실제 Supabase 쿼리 코드(from(\"events\") 등)는 작성하지 않는다(Phase 2 더미 데이터 원칙 준수). 완료 후 npm run type-check와 npm run lint로 전체 검증한다.",
+      "summary": "lib/types/admin.ts와 lib/types/api.ts를 신규 생성했다. admin.ts는 AdminDashboardMetrics(F012 지표 카드, PRD 7종 필드를 이벤트 4단계/사용자 3단계 비대칭 그대로 반영), PaginatedResult<T>/TableQueryParams(F013/F014 테이블 공통), TimeSeriesPoint(F015 Recharts용)를 담았고, api.ts는 success 필드로 판별되는 ApiResult<T> 유니언을 담았다. 두 파일 모두 event.ts/profile.ts/event-view.ts에 의존하지 않는 독립 파일이며, 큰따옴표/세미콜론 등 .prettierrc.json 규칙과 named export, 한국어 주석 1줄 규칙을 준수했다. npm run type-check, npm run lint, npx prettier --check 모두 재검증 통과했고, lib/types/에 배럴 파일 없이 5개 파일(profile/event/event-view/admin/api)만 존재함을 Glob으로 최종 확인했다.",
+      "completedAt": "2026-08-19T05:58:11.176Z"
+    },
+    {
+      "id": "1a26cf29-f780-4aa4-b890-4bab0810f44e",
+      "name": "타입 정의 통합 검증",
+      "description": "lib/types/ 아래 5개 파일(profile.ts, event.ts, event-view.ts, admin.ts, api.ts) 전체를 대상으로 타입 체크와 린트를 수행하고, docs/ROADMAP.md의 Phase 1 체크리스트 및 Task 002 항목을 완료 처리한다.",
+      "notes": "이 Task는 코드를 새로 작성하지 않고 검증과 문서 갱신만 수행한다. shrimp-rules.md의 'ROADMAP.md에서 Task를 완료 처리(✅)할 때는 같은 커밋 안에서 실제 구현 코드도 함께 반영할 것' 원칙에 따라, 이미 앞선 3개 서브태스크에서 코드가 반영되어 있으므로 문서 갱신만 남은 상태다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "f98a0a99-6841-4c69-892d-8e23c84a5129"
+        },
+        {
+          "taskId": "4671363c-c0c0-432f-8c8e-4742dea7658e"
+        },
+        {
+          "taskId": "893b3a13-79c9-4846-bf4c-c39122f1e73d"
+        }
+      ],
+      "createdAt": "2026-08-19T05:39:09.167Z",
+      "updatedAt": "2026-08-19T06:00:09.699Z",
+      "relatedFiles": [
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "Task 002 완료 표시 및 Phase 1 품질 체크리스트 갱신",
+          "lineStart": 49,
+          "lineEnd": 54
+        },
+        {
+          "path": "lib/types/profile.ts",
+          "type": "REFERENCE",
+          "description": "검증 대상"
+        },
+        {
+          "path": "lib/types/event.ts",
+          "type": "REFERENCE",
+          "description": "검증 대상"
+        },
+        {
+          "path": "lib/types/event-view.ts",
+          "type": "REFERENCE",
+          "description": "검증 대상"
+        },
+        {
+          "path": "lib/types/admin.ts",
+          "type": "REFERENCE",
+          "description": "검증 대상"
+        },
+        {
+          "path": "lib/types/api.ts",
+          "type": "REFERENCE",
+          "description": "검증 대상"
+        }
+      ],
+      "implementationGuide": "1. npm run type-check 실행 → 에러 0건 확인\n2. npm run lint 실행 → lib/types/ 관련 에러 0건 확인(신규 파일이 eslint-config-next 규칙 위반하지 않는지)\n3. docs/ROADMAP.md의 'Task 002: 타입 정의 및 인터페이스 설계' 제목에 완료 표시(✅)를 추가하고, 하위 5개 세부 항목 각각에도 완료 표시\n4. docs/ROADMAP.md '품질 체크리스트 > Phase 1' 섹션의 '프론트엔드 타입 정의 파일 구조 완성', '임시 데이터 모델 타입 정의 완료' 두 항목을 [x]로 변경\n5. lib/types/에 배럴 파일(index.ts)이 생성되지 않았음을 재확인(설계 결정: lib/supabase/ 패턴을 따라 배럴 파일 미사용)",
+      "verificationCriteria": "npm run type-check와 npm run lint가 모두 에러 없이 통과. docs/ROADMAP.md의 Task 002 항목과 Phase 1 품질 체크리스트 2개 항목이 체크 완료 상태로 갱신됨.",
+      "analysisResult": "Gather 프로젝트 ROADMAP.md Phase 1 Task 002 \"타입 정의 및 인터페이스 설계\"의 최종 목표: lib/types/ 디렉터리를 신설하여 (1) profiles/events/event_participants 원격 Supabase 테이블(mcp__supabase__list_tables로 실측한 실제 컬럼)에 대응하는 프론트엔드 임시 도메인 타입, (2) PRD.md의 13개 페이지 요구사항에서 역산한 화면 조합용 뷰모델 타입, (3) 관리자 대시보드/테이블/통계용 타입, (4) Server Action 반환값에 재사용할 공통 API 결과 타입을 작성한다. 배럴 파일(index.ts)은 lib/supabase/의 기존 패턴(client.ts/server.ts/proxy.ts를 개별 경로로 import)을 따라 만들지 않는다. 전역 상태 관리 타입은 현재 상태관리 라이브러리가 프로젝트에 없으므로 이번 Task에서 별도 파일을 만들지 않고 범위를 명시적으로 제외한다(향후 Task 004/008에서 필요 시 추가). 모든 파일은 kebab-case, named export, 한국어 주석(타입 단위 1줄), @/ 경로 별칭을 따른다. 이 Task는 순수 타입 정의만 다루며 실제 Supabase 쿼리 코드(from(\"events\") 등)는 작성하지 않는다(Phase 2 더미 데이터 원칙 준수). 완료 후 npm run type-check와 npm run lint로 전체 검증한다.",
+      "summary": "lib/types/의 5개 파일(profile.ts, event.ts, event-view.ts, admin.ts, api.ts) 전체에 대해 npm run type-check, npm run lint, npx prettier --check를 모두 재실행해 에러 0건을 확인했고 배럴 파일(index.ts)이 없음도 재확인했다. docs/ROADMAP.md의 Task 002 제목과 5개 세부 항목에 ✅ 표시 및 각 항목의 실제 구현 근거(파일명, 범위 제외 사유)를 추가했으며, Phase 1 품질 체크리스트의 '프론트엔드 타입 정의 파일 구조 완성', '임시 데이터 모델 타입 정의 완료' 두 항목을 [x]로 변경했다. Task 003 이후 섹션과 Phase 2~4는 건드리지 않았음을 직접 Read로 확인했다. 이로써 ROADMAP.md Phase 1 Task 002 전체가 코드와 문서 양쪽에서 완료 처리되었다.",
+      "completedAt": "2026-08-19T06:00:09.697Z"
     }
   ]
 }
