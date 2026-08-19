@@ -1,3 +1,9 @@
+import { EventForm } from "@/components/event-form";
+
 export default function NewEventPage() {
-  return <div>이벤트 생성</div>;
+  return (
+    <div className="p-4">
+      <EventForm mode="create" />
+    </div>
+  );
 }
