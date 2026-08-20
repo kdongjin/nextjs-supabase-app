@@ -339,6 +339,29 @@ export function getDummyEventCardSummaries(): EventCardSummary[] {
   }));
 }
 
+export function getDummyEventCardSummariesByRole(profileId: string): {
+  hosted: EventCardSummary[];
+  participated: EventCardSummary[];
+} {
+  const hostedEventIds = new Set(
+    DUMMY_EVENT_PARTICIPANTS.filter(
+      (participant) => participant.role === "host" && participant.userId === profileId,
+    ).map((participant) => participant.eventId),
+  );
+  const participatedEventIds = new Set(
+    DUMMY_EVENT_PARTICIPANTS.filter(
+      (participant) => participant.role === "participant" && participant.userId === profileId,
+    ).map((participant) => participant.eventId),
+  );
+
+  const summaries = getDummyEventCardSummaries();
+
+  return {
+    hosted: summaries.filter((event) => hostedEventIds.has(event.id)),
+    participated: summaries.filter((event) => participatedEventIds.has(event.id)),
+  };
+}
+
 export function getDummyParticipantsWithProfile(eventId: string): EventParticipantWithProfile[] {
   return DUMMY_EVENT_PARTICIPANTS.filter((participant) => participant.eventId === eventId).map(
     (participant) => {
