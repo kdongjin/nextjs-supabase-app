@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/logout-button";
 
 const ADMIN_NAV_ITEMS = [
   { href: "/admin/dashboard", label: "대시보드" },
@@ -8,6 +13,8 @@ const ADMIN_NAV_ITEMS = [
 ] as const;
 
 export function AdminSidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="flex h-screen w-[240px] shrink-0 flex-col border-r bg-background">
       <div className="flex h-16 items-center px-4 font-semibold">Gather Admin</div>
@@ -16,14 +23,17 @@ export function AdminSidebar() {
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            className={cn(
+              "rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+              pathname === item.href && "bg-accent text-accent-foreground",
+            )}
           >
             {item.label}
           </Link>
         ))}
       </nav>
       <div className="border-t px-2 py-2">
-        <span className="block rounded-md px-3 py-2 text-sm text-muted-foreground">로그아웃</span>
+        <LogoutButton />
       </div>
     </aside>
   );
