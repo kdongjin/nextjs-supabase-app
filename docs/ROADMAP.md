@@ -96,13 +96,14 @@ Gather는 5-30명 규모의 소규모 이벤트 주최자와 참여자를 위한
   - **의존성**: Task 004 (공통 컴포넌트 재사용)
   - **구현 비고**: 로그인/역할 전환 기능이 아직 없어(Phase 3 예정), `lib/view-role-context.tsx`의 더미 역할 토글(host/participant)로 참여자 전용 내비게이션(생성 버튼 숨김)을 데모함 — Task 008 실제 인증 도입 시 제거 예정. 이벤트 상세 페이지의 참여자 읽기 전용 뷰(공유/수정/삭제 버튼 숨김)는 Task 004에서 구현된 `isHost` 조건부 렌더링을 그대로 재사용.
 
-- **Task 006: 관리자 데스크톱 페이지 UI 완성**
-  - 관리자 로그인 페이지 UI 구현
-  - 관리자 대시보드 메인 페이지 UI 구현 (F012)
-  - 이벤트 관리 테이블 페이지 UI 구현 (F013)
-  - 사용자 관리 테이블 페이지 UI 구현 (F014)
-  - 통계 분석 페이지 UI 구현 (F015)
-  - Recharts 라이브러리 설치 및 더미 차트 구현
+- **Task 006: 관리자 데스크톱 페이지 UI 완성** ✅ - 완료
+  - ✅ 관리자 로그인 페이지 UI 구현
+  - ✅ 관리자 대시보드 메인 페이지 UI 구현 (F012)
+  - ✅ 이벤트 관리 테이블 페이지 UI 구현 (F013)
+  - ✅ 사용자 관리 테이블 페이지 UI 구현 (F014)
+  - ✅ 통계 분석 페이지 UI 구현 (F015)
+  - ✅ Recharts 라이브러리 설치 및 더미 차트 구현
+  - **구현 비고**: 관리자 role 체크(Task 008 예정)는 이번 범위가 아니며, `proxy.ts`는 `/admin/login`만 인증 예외로 두고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과됨. `getDummyAdminDashboardMetrics`는 매 호출마다 `new Date()`를 읽어야 해서 `next.config.ts`의 `cacheComponents` 하에서 정적 프리렌더링이 불가능했음 — `next/cache`의 `io()` + `Suspense` 분리로 해결(`app/admin/(dashboard)/dashboard/page.tsx`).
 
 ### Phase 3: 데이터베이스 설정 및 핵심 기능 구현
 
@@ -236,7 +237,7 @@ Gather는 5-30명 규모의 소규모 이벤트 주최자와 참여자를 위한
 
 - [x] React Hook Form 7.x (Task 004에서 설치)
 - [x] Zod (Task 004에서 설치)
-- [ ] Recharts 2.x (Task 006에서 설치)
+- [x] Recharts 2.x (Task 006에서 설치)
 
 ## 품질 체크리스트
 
