@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useViewRole } from "@/lib/view-role-context";
 
 const NAV_ITEMS = [
   { href: "/events", label: "내 이벤트" },
@@ -12,10 +13,15 @@ const NAV_ITEMS = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { viewRole } = useViewRole();
+  const items =
+    viewRole === "participant"
+      ? NAV_ITEMS.filter((item) => item.href !== "/events/new")
+      : NAV_ITEMS;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-16 w-full max-w-[500px] items-center justify-around border-t bg-background">
-      {NAV_ITEMS.map((item) => (
+      {items.map((item) => (
         <Link
           key={item.href}
           href={item.href}
