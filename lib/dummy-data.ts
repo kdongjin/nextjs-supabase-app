@@ -2,6 +2,8 @@
 // Task 007~010에서 실제 Supabase 쿼리로 교체될 예정 — 조회 함수의 이름(get 접두사)과
 // 반환 타입은 그대로 유지하고 내부 구현만 async로 바뀔 수 있도록 설계함
 
+import { io } from "next/cache";
+
 import type { Event, EventParticipant, EventStatus } from "@/lib/types/event";
 import type {
   EventCardSummary,
@@ -9,6 +11,12 @@ import type {
   EventWithParticipants,
 } from "@/lib/types/event-view";
 import type { Profile } from "@/lib/types/profile";
+import type {
+  AdminDashboardMetrics,
+  AdminEventRow,
+  AdminUserRow,
+  TimeSeriesPoint,
+} from "@/lib/types/admin";
 
 // 오늘 기준 상대 오프셋으로 ISO 문자열을 생성한다(절대 날짜 하드코딩 금지 — 시간이 지나도
 // upcoming/ongoing/ended 분포가 유지되도록 함)
@@ -394,4 +402,114 @@ export function getDummyEventWithParticipants(eventId: string): EventWithPartici
     participants,
     participantCount: participants.length,
   };
+}
+
+// 관리자 페이지(Task 006)용 뷰모델 조회 함수 — Task 011에서 실제 Supabase 집계 쿼리로
+// 교체될 때까지 함수 이름과 반환 타입을 유지한다.
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function isSameWeek(date: Date, reference: Date): boolean {
+  const startOfWeek = new Date(reference);
+  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setDate(reference.getDate() - reference.getDay());
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+  return date >= startOfWeek && date < endOfWeek;
+}
+
+function isSameMonth(date: Date, reference: Date): boolean {
+  return date.getFullYear() === reference.getFullYear() && date.getMonth() === reference.getMonth();
+}
+
+export function getDummyAdminEventRows(): AdminEventRow[] {
+  return DUMMY_EVENTS.map((event) => {
+    const host = getDummyProfileById(event.createdBy);
+    const hostName = host?.fullName ?? host?.username ?? host?.email ?? "알 수 없음";
+
+    return {
+      id: event.id,
+      title: event.title,
+      location: event.location,
+      eventDate: event.eventDate,
+      status: event.status,
+      createdAt: event.createdAt,
+      hostName,
+      participantCount: countParticipants(event.id),
+    };
+  });
+}
+
+export function getDummyAdminUserRows(): AdminUserRow[] {
+  return DUMMY_PROFILES.map((profile) => {
+    const hostedEventCount = DUMMY_EVENT_PARTICIPANTS.filter(
+      (participant) => participant.role === "host" && participant.userId === profile.id,
+    ).length;
+    const participatedEventCount = DUMMY_EVENT_PARTICIPANTS.filter(
+      (participant) => participant.role === "participant" && participant.userId === profile.id,
+    ).length;
+
+    return {
+      id: profile.id,
+      email: profile.email,
+      role: profile.role,
+      createdAt: profile.createdAt,
+      displayName: profile.fullName ?? profile.username ?? profile.email,
+      hostedEventCount,
+      participatedEventCount,
+    };
+  });
+}
+
+// todayEvents/weekEvents/monthEvents는 이벤트가 "열리는" 날짜(eventDate) 기준이며,
+// "생성된" 날짜(createdAt) 기준 추이는 getDummyEventCreationTrend가 별도로 담당한다.
+// new Date()로 매 호출마다 "지금"을 다시 읽으므로 next.config.ts의 cacheComponents 하에서
+// 정적 프리렌더링 대상이 될 수 없다 — io()로 이 값을 정적 셸에서 제외한다고 명시한다
+// (호출부인 app/admin/(dashboard)/dashboard/page.tsx는 Suspense로 감싸야 함).
+export async function getDummyAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
+  await io();
+  const now = new Date();
+
+  const todayEvents = DUMMY_EVENTS.filter((event) =>
+    isSameDay(new Date(event.eventDate), now),
+  ).length;
+  const weekEvents = DUMMY_EVENTS.filter((event) =>
+    isSameWeek(new Date(event.eventDate), now),
+  ).length;
+  const monthEvents = DUMMY_EVENTS.filter((event) =>
+    isSameMonth(new Date(event.eventDate), now),
+  ).length;
+  const totalEvents = DUMMY_EVENTS.length;
+
+  // DUMMY_PROFILES의 createdAt이 전부 60일 이상 과거로 고정되어 있어 todayUsers/weekUsers는
+  // 항상 0이 나올 수 있다 — 실제 시드 데이터를 정직하게 반영한 것이며 별도 보정하지 않는다.
+  const todayUsers = DUMMY_PROFILES.filter((profile) =>
+    isSameDay(new Date(profile.createdAt), now),
+  ).length;
+  const weekUsers = DUMMY_PROFILES.filter((profile) =>
+    isSameWeek(new Date(profile.createdAt), now),
+  ).length;
+  const totalUsers = DUMMY_PROFILES.length;
+
+  return { todayEvents, weekEvents, monthEvents, totalEvents, todayUsers, weekUsers, totalUsers };
+}
+
+export function getDummyEventCreationTrend(): TimeSeriesPoint[] {
+  const counts = new Map<string, number>();
+
+  for (const event of DUMMY_EVENTS) {
+    const date = event.createdAt.slice(0, 10); // YYYY-MM-DD
+    counts.set(date, (counts.get(date) ?? 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([date, value]) => ({ date, value }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
