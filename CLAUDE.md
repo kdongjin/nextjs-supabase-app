@@ -65,3 +65,13 @@ Supabase MCP는 원격 프로젝트에 직접 연결됨 — 로컬 `supabase/mig
 `component-patterns.md`는 실제 코드와 일치하도록 검증·수정됨(대부분 범용 React 패턴이라 원래도 크게 어긋나지 않았지만, Next.js 버전 표기를 정정하고 미설치 패키지 `react-window` 예시에 주의 문구를 추가함).
 
 `styling-guide.md`는 가장 큰 오류가 있었음 — 문서 전체가 "TailwindCSS v4"를 전제로 쓰였지만 실제로는 `tailwind.config.ts` + `@tailwind` 지시어를 쓰는 **v3(`^3.4.1`)**. 애니메이션 라이브러리명도 `tw-animate-css`(존재하지 않음)가 아니라 `tailwindcss-animate`(`tailwind.config.ts`의 plugin)이며, 실제 애니메이션 클래스는 `animate-fadeIn` 같은 이름이 아니라 `data-[state=open]:animate-in data-[state=open]:fade-in-0` 형태(`components/ui/dropdown-menu.tsx` 참고)임. 색상 변수 경로도 `app/globals.css`(`src/app/` 아님)로 정정됨. 4개 가이드 문서 모두 검증·최신화 완료.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
