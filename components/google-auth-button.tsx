@@ -27,7 +27,7 @@ export function GoogleAuthButton({ onError }: GoogleAuthButtonProps) {
       // 컴포넌트가 언마운트될 때까지 로딩 상태를 유지한다.
     } catch (error: unknown) {
       setIsLoading(false);
-      onError?.(error instanceof Error ? error.message : "An error occurred");
+      onError?.(error instanceof Error ? error.message : "오류가 발생했습니다");
     }
   };
 
@@ -40,7 +40,7 @@ export function GoogleAuthButton({ onError }: GoogleAuthButtonProps) {
       disabled={isLoading}
     >
       <GoogleIcon />
-      {isLoading ? "Redirecting..." : "Continue with Google"}
+      {isLoading ? "이동 중..." : "Google로 계속하기"}
     </Button>
   );
 }
