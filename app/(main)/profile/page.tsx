@@ -1,4 +1,5 @@
 import { LogoutButton } from "@/components/logout-button";
+import { ViewRoleToggle } from "@/components/view-role-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatEventDate } from "@/lib/date-utils";
@@ -40,6 +41,8 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      <ViewRoleToggle />
 
       <LogoutButton />
     </div>
