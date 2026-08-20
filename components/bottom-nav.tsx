@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useViewRole } from "@/lib/view-role-context";
 
 const NAV_ITEMS = [
+  { href: "/", label: "홈" },
   { href: "/events", label: "내 이벤트" },
   { href: "/events/new", label: "새 이벤트" },
   { href: "/profile", label: "프로필" },
