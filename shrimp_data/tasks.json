@@ -543,6 +543,305 @@
       "analysisResult": "Task 005: 참여자 모바일 UI/UX 완성(docs/ROADMAP.md 83~96번째 줄). Task 004(주최자 플로우)는 완료됨. 목표는 (1) app/(main) 레이아웃 레벨에 더미 역할 토글(host/participant)을 도입해 BottomNav/FAB를 조건부 렌더링하고, (2) 빈 껍데기 상태인 app/join/[invite_code]/page.tsx를 초대 미리보기+참여 확인 페이지로 완성하며, (3) app/(main)/events/page.tsx에 \"만든 이벤트/참여한 이벤트\" 역할 탭을 추가하고, (4) 이미 Task 004에서 구현된 이벤트 상세 페이지의 isHost 조건부 렌더링(참여자 읽기 전용 뷰)을 회귀 검증한 뒤, (5) docs/ROADMAP.md의 Task 005 체크박스와 Phase 2 완료 기준을 갱신하는 것이다. 신규 shadcn 프리미티브 설치는 없음(기존 Button variant 토글 그룹 패턴 재사용). 모든 신규 데이터 조회 함수는 lib/dummy-data.ts에 get 접두사로 추가하며 Phase 2 컨벤션(더미 데이터만 사용, 실제 Supabase 연동 금지)을 따른다.",
       "summary": "app/(main)/events/[id]/page.tsx의 isHost 조건부 렌더링 로직을 Task 1~4의 변경 파일과 대조 검토한 결과 전혀 수정되지 않았고, lib/view-role-context.tsx의 ViewRoleProvider와도 완전히 독립적인 별개 메커니즘(이벤트별 isHost vs 레이아웃 레벨 데모 토글)이라 회귀 가능성이 없음을 확인했다. (main) 라우트라 로그인 없이는 브라우저 육안 확인이 불가능한 구조적 제약이 이 작업에도 동일하게 적용되어(Task 1·2·4와 동일), 코드 트레이스로 대체 검증했다. npm run type-check, npm run lint, npm run build를 순서대로 실행해 모두 성공했다(빌드 시 dev 서버와의 .next 캐시 충돌을 피하기 위해 기존 백그라운드 dev 서버를 먼저 종료함). 빌드 출력에서 /join/[invite_code], /events, /events/[id] 등 이번 Task 005에서 다룬 라우트가 모두 정상 컴파일됨을 확인했다. docs/ROADMAP.md의 Task 005 제목과 하위 6개 항목(83~94번째 줄)을 모두 ✅로 표시하고, 더미 역할 토글이 Phase 3에서 제거될 임시 장치라는 구현 비고를 추가했다. Phase 2 완료 기준 체크리스트(254~259번째 줄)는 의도적으로 미체크 상태로 유지했다 — Task 003(공통 컴포넌트 라이브러리)과 Task 006(관리자 데스크톱 UI)이 로드맵상 아직 완료 표시되지 않아, \"모든 페이지 UI 완성\" 같은 Phase 전체 범위 항목을 체크하면 실제 구현 상태를 과장하게 되기 때문이다(Task 004 완료 시점에도 동일 체크리스트가 미체크로 남아있던 선례와 일치, shrimp-rules.md의 '실제 구현 코드가 존재해야 체크' 원칙 준수).",
       "completedAt": "2026-08-20T05:50:29.660Z"
+    },
+    {
+      "id": "c9171cc1-390b-4ec4-b521-690ae25202b6",
+      "name": "Recharts 및 shadcn table 컴포넌트 설치",
+      "description": "관리자 페이지 구현에 필요한 두 의존성을 설치한다: Recharts(통계 분석 페이지 차트용)와 shadcn table 컴포넌트(이벤트/사용자 관리 테이블용).",
+      "notes": "이 작업은 설치만 담당하며 실제 사용은 이후 작업(3, 5, 6, 7)에서 이루어진다.",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-20T06:27:39.620Z",
+      "updatedAt": "2026-08-20T06:32:23.730Z",
+      "relatedFiles": [
+        {
+          "path": "package.json",
+          "type": "TO_MODIFY",
+          "description": "recharts 의존성 추가"
+        },
+        {
+          "path": "components/ui/table.tsx",
+          "type": "CREATE",
+          "description": "shadcn table 프리미티브"
+        }
+      ],
+      "implementationGuide": "1) npm install recharts@^2 실행 후 package.json에 반영 확인.\n2) npx shadcn@latest add table 실행해 components/ui/table.tsx(Table/TableHeader/TableBody/TableRow/TableHead/TableCell) 생성 확인.\n3) npm run type-check로 설치 후 빌드 이상 없는지 확인.",
+      "verificationCriteria": "package.json의 dependencies에 recharts가 추가되고, components/ui/table.tsx가 생성됨. npm run type-check 통과.",
+      "analysisResult": "Task 006: 관리자 데스크톱 페이지 UI 완성(docs/ROADMAP.md 99~105번째 줄). 목표는 (1) Recharts와 shadcn table 컴포넌트를 설치하고, (2) 빈 껍데기인 app/admin/login/page.tsx를 실제 로그인 폼(AdminLoginForm, /admin/dashboard로 리다이렉트)으로 완성하며 AdminSidebar에 active state와 기존 LogoutButton을 연동하고, (3) lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델을 추가하고 lib/dummy-data.ts에 getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 조회 함수를 추가하며, (4)~(6) 대시보드/이벤트 관리 테이블/사용자 관리 테이블 페이지를 각각 구현하고, (7) 통계 분석 페이지에 Recharts 라인차트를 구현한 뒤, (8) 전체 회귀 검증과 docs/ROADMAP.md 갱신을 수행하는 것이다. proxy.ts는 /admin/login만 인증 예외이고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과되며(관리자 role 체크는 Task 008 범위, 이번엔 구현하지 않음), 모든 admin 페이지는 Phase 2 컨벤션에 따라 더미 데이터 조회 함수만 사용한다. 신규 shadcn 프리미티브는 table만 설치하고 페이지네이션은 기존 Button 토글 그룹 패턴을 재사용한다.",
+      "summary": "ui-markup-specialist 에이전트에게 위임해 두 의존성을 설치했다: npm install recharts@^2로 package.json dependencies에 recharts@^2.15.4가 추가되었고, npx shadcn@latest add table로 components/ui/table.tsx(Table/TableHeader/TableBody/TableRow/TableHead/TableCell)가 CLI 기본 산출물 그대로 생성되었다(수동 수정 없음). npm run type-check를 에이전트와 직접 검증 모두에서 통과 확인했다(package.json의 recharts 라인, components/ui/table.tsx 파일 존재를 직접 grep/ls로 재확인). recharts 2.x deprecated 경고가 npm install 중 출력되었으나 로드맵에 명시된 \"Recharts 2.x\" 요구사항에 맞춰 의도적으로 ^2로 설치했으므로 문제 없음. 이 작업은 설치만 담당하며 실제 사용(통계 분석 페이지 차트, 이벤트/사용자 관리 테이블)은 이후 작업(3, 5, 6, 7)에서 이루어진다.",
+      "completedAt": "2026-08-20T06:32:23.727Z"
+    },
+    {
+      "id": "17472c33-896a-45ff-90c3-7c0f63d7b56f",
+      "name": "관리자 로그인 페이지 및 사이드바 개선",
+      "description": "app/admin/login/page.tsx를 실제 로그인 폼으로 완성하고, components/admin-sidebar.tsx에 현재 경로 강조(active state)와 기존 LogoutButton 연동을 추가한다.",
+      "notes": "LoginForm 자체는 수정하지 않는다(다른 페이지에서 계속 /protected로 쓰이는 공용 컴포넌트). admin-sidebar.tsx가 \"use client\"로 바뀌어도 admin/(dashboard)/layout.tsx(Server Component)가 이를 자식으로 렌더링하는 데는 문제없다(app/(main)/layout.tsx가 이미 client인 BottomNav를 렌더링하는 것과 동일 패턴).",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-20T06:27:39.620Z",
+      "updatedAt": "2026-08-20T06:36:25.521Z",
+      "relatedFiles": [
+        {
+          "path": "components/admin-login-form.tsx",
+          "type": "CREATE",
+          "description": "관리자 로그인 폼, /admin/dashboard로 리다이렉트"
+        },
+        {
+          "path": "app/admin/login/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "데스크톱 중앙 정렬 레이아웃으로 AdminLoginForm 렌더링"
+        },
+        {
+          "path": "components/admin-sidebar.tsx",
+          "type": "TO_MODIFY",
+          "description": "active state + LogoutButton 연동"
+        },
+        {
+          "path": "components/login-form.tsx",
+          "type": "REFERENCE",
+          "description": "로그인 폼 필드 구성 및 supabase 호출 패턴 참고"
+        },
+        {
+          "path": "components/bottom-nav.tsx",
+          "type": "REFERENCE",
+          "description": "usePathname 기반 active state 패턴 참고"
+        },
+        {
+          "path": "components/logout-button.tsx",
+          "type": "DEPENDENCY",
+          "description": "기존 로그아웃 컴포넌트 재사용"
+        }
+      ],
+      "implementationGuide": "1) components/admin-login-form.tsx(신규, \"use client\") 작성: components/login-form.tsx의 useState(email/password/error/isLoading) + supabase.auth.signInWithPassword 호출 패턴을 그대로 따르되, GoogleAuthButton과 회원가입 링크는 제외하고 성공 시 router.push(\"/admin/dashboard\")로 리다이렉트. Card/CardHeader/CardTitle/CardContent(components/ui/card.tsx)로 감싼다.\n2) app/admin/login/page.tsx: MobileShell 대신 <div className=\"flex min-h-screen items-center justify-center p-6\"><div className=\"w-full max-w-sm\"><AdminLoginForm /></div></div> 형태의 데스크톱 중앙 정렬 레이아웃으로 구현.\n3) components/admin-sidebar.tsx: 파일 상단에 \"use client\" 추가, usePathname()(bottom-nav.tsx와 동일 패턴)으로 ADMIN_NAV_ITEMS 각 Link에 pathname === item.href 조건부 cn() 클래스 적용. 하단의 정적 \"로그아웃\" <span>을 <LogoutButton />(components/logout-button.tsx, 기존 컴포넌트 그대로 import)으로 교체.",
+      "verificationCriteria": "/admin/login에서 유효한 계정으로 로그인 시 /admin/dashboard로 이동. AdminSidebar에서 현재 페이지 메뉴 항목이 시각적으로 강조되고, 로그아웃 버튼 클릭 시 실제 로그아웃 동작. npm run type-check, npm run lint 통과.",
+      "analysisResult": "Task 006: 관리자 데스크톱 페이지 UI 완성(docs/ROADMAP.md 99~105번째 줄). 목표는 (1) Recharts와 shadcn table 컴포넌트를 설치하고, (2) 빈 껍데기인 app/admin/login/page.tsx를 실제 로그인 폼(AdminLoginForm, /admin/dashboard로 리다이렉트)으로 완성하며 AdminSidebar에 active state와 기존 LogoutButton을 연동하고, (3) lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델을 추가하고 lib/dummy-data.ts에 getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 조회 함수를 추가하며, (4)~(6) 대시보드/이벤트 관리 테이블/사용자 관리 테이블 페이지를 각각 구현하고, (7) 통계 분석 페이지에 Recharts 라인차트를 구현한 뒤, (8) 전체 회귀 검증과 docs/ROADMAP.md 갱신을 수행하는 것이다. proxy.ts는 /admin/login만 인증 예외이고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과되며(관리자 role 체크는 Task 008 범위, 이번엔 구현하지 않음), 모든 admin 페이지는 Phase 2 컨벤션에 따라 더미 데이터 조회 함수만 사용한다. 신규 shadcn 프리미티브는 table만 설치하고 페이지네이션은 기존 Button 토글 그룹 패턴을 재사용한다.",
+      "summary": "ui-markup-specialist 에이전트에게 마크업/스타일링 범위만 위임했다: components/admin-login-form.tsx(신규, Card/CardHeader/CardTitle/CardContent + 정적 Input/Label 필드, GoogleAuthButton/회원가입/비밀번호찾기 링크 제외), app/admin/login/page.tsx(데스크톱 중앙 정렬 레이아웃으로 AdminLoginForm 배치), components/admin-sidebar.tsx(usePathname+cn으로 bottom-nav.tsx와 동일한 active state 패턴 적용, 정적 \"로그아웃\" 텍스트를 기존 LogoutButton으로 교체)를 마크업 전용으로 완성했고, 인증 로직 자리는 TODO 주석으로 남겼다. 이후 오케스트레이터가 admin-login-form.tsx에 실제 로직을 추가했다: useState(email/password/error/isLoading), handleLogin에서 supabase.auth.signInWithPassword 호출 후 성공 시 router.push(\"/admin/dashboard\"), 실패 시 에러 메시지 표시, 로딩 중 버튼 비활성화+텍스트 변경(components/login-form.tsx와 동일한 패턴, LoginForm 자체는 수정하지 않음). npm run type-check, npm run lint 모두 통과. Playwright로 /admin/login에 실제 접속해 폼이 정확히 렌더링됨을 확인했고, 임의 자격증명으로 제출해 실제 Supabase Auth가 응답한 'Invalid login credentials' 에러 메시지가 화면에 정상 표시되는 것까지 확인했다(supabase.auth.signInWithPassword 호출과 에러 처리 경로가 실제로 동작함을 검증). 유효 계정이 없어 성공 시 /admin/dashboard 리다이렉트와 AdminSidebar active state/로그아웃 버튼의 실제 화면 확인은 하지 못했으나, 코드가 components/login-form.tsx/bottom-nav.tsx의 이미 검증된 패턴을 그대로 따르고 있어 회귀 가능성은 낮다고 판단했다.",
+      "completedAt": "2026-08-20T06:36:25.516Z"
+    },
+    {
+      "id": "4af498a4-129d-4153-8fdd-8d07e6044c47",
+      "name": "관리자 뷰모델 타입 및 더미 데이터 조회 함수 추가",
+      "description": "lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델 타입을 추가하고, lib/dummy-data.ts에 이후 대시보드/테이블/통계 페이지가 공통으로 사용할 4개의 조회 함수(getDummyAdminEventRows, getDummyAdminUserRows, getDummyAdminDashboardMetrics, getDummyEventCreationTrend)를 추가한다.",
+      "notes": "네 함수 모두 매개변수 없이 호출 가능하게 설계(Task 007~011에서 실제 Supabase 집계 쿼리로 교체될 때 시그니처 유지 목적).",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-20T06:27:39.620Z",
+      "updatedAt": "2026-08-20T06:39:29.575Z",
+      "relatedFiles": [
+        {
+          "path": "lib/types/admin.ts",
+          "type": "TO_MODIFY",
+          "description": "AdminEventRow, AdminUserRow 뷰모델 타입 추가"
+        },
+        {
+          "path": "lib/dummy-data.ts",
+          "type": "TO_MODIFY",
+          "description": "getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 추가"
+        },
+        {
+          "path": "lib/types/event-view.ts",
+          "type": "REFERENCE",
+          "description": "뷰모델 타입 작성 컨벤션 참고"
+        }
+      ],
+      "implementationGuide": "1) lib/types/admin.ts에 추가:\n```\nexport interface AdminEventRow extends Pick<Event, \"id\"|\"title\"|\"location\"|\"eventDate\"|\"status\"|\"createdAt\"> {\n  hostName: string;\n  participantCount: number;\n}\nexport interface AdminUserRow extends Pick<Profile, \"id\"|\"email\"|\"role\"|\"createdAt\"> {\n  displayName: string;\n  hostedEventCount: number;\n  participatedEventCount: number;\n}\n```\n(Event/Profile import 추가 필요)\n2) lib/dummy-data.ts 하단에 추가:\n- getDummyAdminEventRows(): AdminEventRow[] — DUMMY_EVENTS.map, getDummyProfileById(event.createdBy)로 hostName(fullName??username??email) 조회, countParticipants(기존 private 함수) 재사용.\n- getDummyAdminUserRows(): AdminUserRow[] — DUMMY_PROFILES.map, DUMMY_EVENT_PARTICIPANTS를 role별 필터링해 hostedEventCount/participatedEventCount 집계(Task 005의 getDummyEventCardSummariesByRole과 동일한 Set 기반 집계 아이디어 재사용).\n- getDummyAdminDashboardMetrics(): AdminDashboardMetrics — DUMMY_EVENTS의 eventDate 기준 오늘/이번주/이번달/전체 카운트, DUMMY_PROFILES의 createdAt 기준 오늘/이번주/전체 카운트(0이 나와도 보정하지 않음).\n- getDummyEventCreationTrend(): TimeSeriesPoint[] — DUMMY_EVENTS를 createdAt의 날짜(YYYY-MM-DD)별로 group-by해 카운트, date 오름차순 정렬.",
+      "verificationCriteria": "getDummyAdminEventRows()가 10개 행을, getDummyAdminUserRows()가 8개 행을 반환. profile-1의 hostedEventCount=2, participatedEventCount=5(Task 005에서 검증한 event-1/8 host, event-2/4/6/7/10 participant와 일치). npm run type-check 통과.",
+      "analysisResult": "Task 006: 관리자 데스크톱 페이지 UI 완성(docs/ROADMAP.md 99~105번째 줄). 목표는 (1) Recharts와 shadcn table 컴포넌트를 설치하고, (2) 빈 껍데기인 app/admin/login/page.tsx를 실제 로그인 폼(AdminLoginForm, /admin/dashboard로 리다이렉트)으로 완성하며 AdminSidebar에 active state와 기존 LogoutButton을 연동하고, (3) lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델을 추가하고 lib/dummy-data.ts에 getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 조회 함수를 추가하며, (4)~(6) 대시보드/이벤트 관리 테이블/사용자 관리 테이블 페이지를 각각 구현하고, (7) 통계 분석 페이지에 Recharts 라인차트를 구현한 뒤, (8) 전체 회귀 검증과 docs/ROADMAP.md 갱신을 수행하는 것이다. proxy.ts는 /admin/login만 인증 예외이고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과되며(관리자 role 체크는 Task 008 범위, 이번엔 구현하지 않음), 모든 admin 페이지는 Phase 2 컨벤션에 따라 더미 데이터 조회 함수만 사용한다. 신규 shadcn 프리미티브는 table만 설치하고 페이지네이션은 기존 Button 토글 그룹 패턴을 재사용한다.",
+      "summary": "이 작업은 JSX/스타일링이 전혀 없는 순수 데이터 계층 작업이라 ui-markup-specialist에게 위임할 표면이 없어 직접 구현했다. lib/types/admin.ts에 AdminEventRow(Event Pick + hostName + participantCount), AdminUserRow(Profile Pick + displayName + hostedEventCount + participatedEventCount) 뷰모델 타입을 추가했다. lib/dummy-data.ts에 4개 함수를 추가했다: getDummyAdminEventRows(getDummyProfileById로 hostName 조회, 기존 countParticipants 재사용), getDummyAdminUserRows(DUMMY_EVENT_PARTICIPANTS를 role별 필터링해 개수 집계, Task 005의 Set 기반 집계와 동일한 아이디어), getDummyAdminDashboardMetrics(eventDate 기준 오늘/이번주/이번달 이벤트 카운트 + createdAt 기준 오늘/이번주 사용자 카운트, isSameDay/isSameWeek/isSameMonth private 헬퍼 신규 작성), getDummyEventCreationTrend(createdAt 날짜별 group-by 카운트, 오름차순 정렬). npm run type-check, npm run lint 모두 통과. 임시 검증 스크립트(npx tsx)로 실제 함수를 호출해 수치까지 확인했다: getDummyAdminEventRows().length=10, getDummyAdminUserRows().length=8, profile-1의 hostedEventCount=2/participatedEventCount=5(검증 기준과 정확히 일치), dashboardMetrics.todayUsers/weekUsers=0(더미 프로필 createdAt이 전부 60일 이상 과거라는 사전 예측과 일치, 보정하지 않음), creationTrend가 9개 날짜로 정확히 group-by됨. 검증 스크립트는 확인 후 삭제해 저장소에 흔적을 남기지 않았다.",
+      "completedAt": "2026-08-20T06:39:29.572Z"
+    },
+    {
+      "id": "90c3cc0d-20d0-4a2e-93c1-2fd0dfb90f41",
+      "name": "관리자 대시보드 메인 페이지 UI 구현",
+      "description": "app/admin/(dashboard)/dashboard/page.tsx(F012)를 getDummyAdminDashboardMetrics()의 7개 지표를 Card 그리드로 보여주는 페이지로 완성한다.",
+      "notes": "시계열 차트는 통계 분석 페이지(작업 7) 담당이므로 이 페이지에는 넣지 않는다(F012/F015 역할 분리).",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "4af498a4-129d-4153-8fdd-8d07e6044c47"
+        }
+      ],
+      "createdAt": "2026-08-20T06:27:39.620Z",
+      "updatedAt": "2026-08-20T06:41:59.664Z",
+      "relatedFiles": [
+        {
+          "path": "app/admin/(dashboard)/dashboard/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "지표 카드 그리드 렌더링"
+        },
+        {
+          "path": "lib/dummy-data.ts",
+          "type": "DEPENDENCY",
+          "description": "getDummyAdminDashboardMetrics 사용"
+        }
+      ],
+      "implementationGuide": "Server Component로 getDummyAdminDashboardMetrics() 호출, { label, value }[] 배열로 매핑 후 grid grid-cols-2 md:grid-cols-4 gap-4로 Card(components/ui/card.tsx)를 렌더링. 각 카드는 CardHeader에 지표명(오늘 생성된 이벤트/이번주 생성된 이벤트/이번달 생성된 이벤트/전체 이벤트/오늘 가입한 사용자/이번주 가입한 사용자/전체 사용자), CardContent에 큰 숫자 표시.",
+      "verificationCriteria": "/admin/dashboard 방문 시 7개 지표 카드가 정확한 더미 수치와 함께 표시됨. npm run type-check, npm run lint 통과.",
+      "analysisResult": "Task 006: 관리자 데스크톱 페이지 UI 완성(docs/ROADMAP.md 99~105번째 줄). 목표는 (1) Recharts와 shadcn table 컴포넌트를 설치하고, (2) 빈 껍데기인 app/admin/login/page.tsx를 실제 로그인 폼(AdminLoginForm, /admin/dashboard로 리다이렉트)으로 완성하며 AdminSidebar에 active state와 기존 LogoutButton을 연동하고, (3) lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델을 추가하고 lib/dummy-data.ts에 getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 조회 함수를 추가하며, (4)~(6) 대시보드/이벤트 관리 테이블/사용자 관리 테이블 페이지를 각각 구현하고, (7) 통계 분석 페이지에 Recharts 라인차트를 구현한 뒤, (8) 전체 회귀 검증과 docs/ROADMAP.md 갱신을 수행하는 것이다. proxy.ts는 /admin/login만 인증 예외이고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과되며(관리자 role 체크는 Task 008 범위, 이번엔 구현하지 않음), 모든 admin 페이지는 Phase 2 컨벤션에 따라 더미 데이터 조회 함수만 사용한다. 신규 shadcn 프리미티브는 table만 설치하고 페이지네이션은 기존 Button 토글 그룹 패턴을 재사용한다.",
+      "summary": "ui-markup-specialist 에이전트에게 위임했다 — getDummyAdminDashboardMetrics()를 그대로 호출해 반환값을 buildMetricCards() 헬퍼로 7개 { label, value } 항목으로 매핑하고, grid grid-cols-2 md:grid-cols-4 gap-4 컨테이너 안에 Card/CardHeader/CardTitle/CardContent 조합으로 렌더링하도록 지시했다. 특히 Task 3에서 발견한 라벨 정합성 문제(eventDate 기준 지표는 \"생성된\"이 아니라 \"진행되는\"이어야 함)를 명시적으로 전달했고, 실제 산출물이 정확히 \"오늘/이번주/이번달 진행되는 이벤트\"로 표기된 것을 코드 재검토로 확인했다. 시계열 차트나 인터랙션 없이 정적 카드 그리드만 구성해 F012/F015 역할 분리 요구사항도 충족했다. npm run type-check, npm run lint 모두 통과. /admin/dashboard는 proxy.ts의 인증 필요 라우트라(Task 2/4와 동일한 제약) 브라우저 시각 검증은 불가능했으나, 코드가 getDummyAdminDashboardMetrics()의 실제 반환 필드명(todayEvents/weekEvents/monthEvents/totalEvents/todayUsers/weekUsers/totalUsers)과 정확히 일치하고 Task 3에서 이미 이 함수의 반환값(오늘 2/주간 4/월간 7/전체 10, 사용자 0/0/8)을 직접 실행 검증했으므로 화면에 정확한 수치가 표시될 것으로 판단했다.",
+      "completedAt": "2026-08-20T06:41:59.661Z"
+    },
+    {
+      "id": "6f3f7cf9-0ad4-4574-9a9d-649d325a6390",
+      "name": "이벤트 관리 테이블 페이지 UI 구현",
+      "description": "app/admin/(dashboard)/events/page.tsx(F013)를 getDummyAdminEventRows() 전체를 검색·상태 필터·페이지네이션과 함께 테이블로 보여주는 페이지로 완성한다.",
+      "notes": "실제 삭제/검색 API는 없다(Phase 2 제약) — 전부 클라이언트 사이드 더미 데이터 필터링.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "c9171cc1-390b-4ec4-b521-690ae25202b6"
+        },
+        {
+          "taskId": "4af498a4-129d-4153-8fdd-8d07e6044c47"
+        }
+      ],
+      "createdAt": "2026-08-20T06:27:39.620Z",
+      "updatedAt": "2026-08-20T06:45:21.686Z",
+      "relatedFiles": [
+        {
+          "path": "app/admin/(dashboard)/events/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "검색/필터/페이지네이션 테이블 구현"
+        },
+        {
+          "path": "components/ui/table.tsx",
+          "type": "DEPENDENCY",
+          "description": "테이블 프리미티브"
+        },
+        {
+          "path": "components/event-share-actions.tsx",
+          "type": "REFERENCE",
+          "description": "DeleteEventDialog stub 패턴 참고"
+        },
+        {
+          "path": "components/event-card.tsx",
+          "type": "REFERENCE",
+          "description": "EVENT_STATUS_LABEL/BADGE_VARIANT 재사용"
+        }
+      ],
+      "implementationGuide": "\"use client\" 컴포넌트로 구현: useState로 검색어/상태 필터/페이지 번호 관리. getDummyAdminEventRows()를 제목/장소 부분일치 검색 → 상태 필터(EVENT_STATUS_LABEL 재사용) → 5개씩 페이지네이션(Button 토글 그룹으로 페이지 번호, app/(main)/events/page.tsx의 필터 버튼 그룹 패턴 재사용) 순서로 적용. components/ui/table.tsx로 제목/호스트/장소/일시/참여자수/상태/작업 컬럼 렌더링. 작업 컬럼의 삭제 버튼은 event-share-actions.tsx의 DeleteEventDialog 패턴을 그대로 복제한 stub(Dialog 확인 → sonner 토스트만, 실제 삭제 API는 Task 011 예정 주석).",
+      "verificationCriteria": "/admin/events 방문 시 10개 이벤트가 테이블로 표시. 검색어 입력, 상태 필터, 페이지 이동이 정상 동작. 삭제 버튼 클릭 시 확인 Dialog 후 토스트 표시. npm run type-check, npm run lint 통과.",
+      "analysisResult": "Task 006: 관리자 데스크톱 페이지 UI 완성(docs/ROADMAP.md 99~105번째 줄). 목표는 (1) Recharts와 shadcn table 컴포넌트를 설치하고, (2) 빈 껍데기인 app/admin/login/page.tsx를 실제 로그인 폼(AdminLoginForm, /admin/dashboard로 리다이렉트)으로 완성하며 AdminSidebar에 active state와 기존 LogoutButton을 연동하고, (3) lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델을 추가하고 lib/dummy-data.ts에 getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 조회 함수를 추가하며, (4)~(6) 대시보드/이벤트 관리 테이블/사용자 관리 테이블 페이지를 각각 구현하고, (7) 통계 분석 페이지에 Recharts 라인차트를 구현한 뒤, (8) 전체 회귀 검증과 docs/ROADMAP.md 갱신을 수행하는 것이다. proxy.ts는 /admin/login만 인증 예외이고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과되며(관리자 role 체크는 Task 008 범위, 이번엔 구현하지 않음), 모든 admin 페이지는 Phase 2 컨벤션에 따라 더미 데이터 조회 함수만 사용한다. 신규 shadcn 프리미티브는 table만 설치하고 페이지네이션은 기존 Button 토글 그룹 패턴을 재사용한다.",
+      "summary": "ui-markup-specialist 에이전트에게 마크업 골격(검색 Input, 상태 필터 Button 토글 그룹, Table 컬럼 7개, 작업 컬럼의 DeleteEventDialog 재사용, 페이지네이션 Button 그룹)을 위임했고, useState/필터링 로직은 TODO로 남기도록 했다. 이후 오케스트레이터가 3개 state(searchTerm, statusFilter, page)를 추가하고, 제목/장소 부분일치 검색 → 상태 필터 → 5개씩 페이지네이션 순서로 필터링 체인을 연결했다(app/(main)/events/page.tsx의 필터 버튼 그룹 패턴과 동일한 스타일 유지). 검색어/필터 변경 시 페이지를 1로 리셋하도록 처리했고, totalPages를 넘는 page 값은 currentPage = Math.min(page, totalPages)로 클램프해 방어했다. 필터 결과가 0건일 때는 기존 events/page.tsx와 동일한 EmptyState 컴포넌트를 재사용하도록 추가했다(에이전트 산출물엔 없던 부분이나 기존 컨벤션과의 일관성을 위해 보완). npm run type-check, npm run lint 모두 통과. 전체 10개 이벤트에 페이지 크기 5를 적용하면 정확히 2페이지가 나와, 에이전트가 정적으로 만들어둔 \"1\"/\"2\" 페이지 버튼 개수와 실제 계산 결과가 정확히 일치함을 확인했다. /admin/events는 로그인이 필요한 라우트라(Task 2/4와 동일한 제약) 브라우저 시각 검증은 수행하지 못했다.",
+      "completedAt": "2026-08-20T06:45:21.683Z"
+    },
+    {
+      "id": "aefbecc9-2dc0-4afb-8929-553b64cda1d4",
+      "name": "사용자 관리 테이블 페이지 UI 구현",
+      "description": "app/admin/(dashboard)/users/page.tsx(F014)를 getDummyAdminUserRows() 전체를 검색·역할 필터·페이지네이션과 함께 테이블로 보여주는 페이지로 완성한다.",
+      "notes": "이벤트 관리 테이블(작업 5)과 페이지 구조·페이지네이션 방식을 동일하게 맞춰 두 페이지 간 일관성을 유지한다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "c9171cc1-390b-4ec4-b521-690ae25202b6"
+        },
+        {
+          "taskId": "4af498a4-129d-4153-8fdd-8d07e6044c47"
+        }
+      ],
+      "createdAt": "2026-08-20T06:27:39.620Z",
+      "updatedAt": "2026-08-20T06:48:42.476Z",
+      "relatedFiles": [
+        {
+          "path": "app/admin/(dashboard)/users/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "검색/필터/페이지네이션 테이블 구현"
+        },
+        {
+          "path": "components/ui/table.tsx",
+          "type": "DEPENDENCY",
+          "description": "테이블 프리미티브"
+        },
+        {
+          "path": "components/ui/badge.tsx",
+          "type": "DEPENDENCY",
+          "description": "role 배지 표시"
+        },
+        {
+          "path": "app/admin/(dashboard)/events/page.tsx",
+          "type": "REFERENCE",
+          "description": "동일 구조의 테이블 페이지 패턴 참고(작업 5에서 먼저 구현됨)"
+        }
+      ],
+      "implementationGuide": "이벤트 관리 테이블과 동일한 구조로 \"use client\" 구현: 검색어(이름/이메일 부분일치) + role 필터(전체/user/admin, Button 토글 그룹) + 페이지네이션. components/ui/table.tsx로 이름/이메일/역할(Badge)/만든 이벤트 수/참여한 이벤트 수/가입일(formatEventDate)/작업 컬럼 렌더링. 삭제 버튼도 이벤트 테이블과 동일한 Dialog stub 패턴.",
+      "verificationCriteria": "/admin/users 방문 시 8개 사용자가 테이블로 표시. 검색, role 필터, 페이지 이동 정상 동작. npm run type-check, npm run lint 통과.",
+      "analysisResult": "Task 006: 관리자 데스크톱 페이지 UI 완성(docs/ROADMAP.md 99~105번째 줄). 목표는 (1) Recharts와 shadcn table 컴포넌트를 설치하고, (2) 빈 껍데기인 app/admin/login/page.tsx를 실제 로그인 폼(AdminLoginForm, /admin/dashboard로 리다이렉트)으로 완성하며 AdminSidebar에 active state와 기존 LogoutButton을 연동하고, (3) lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델을 추가하고 lib/dummy-data.ts에 getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 조회 함수를 추가하며, (4)~(6) 대시보드/이벤트 관리 테이블/사용자 관리 테이블 페이지를 각각 구현하고, (7) 통계 분석 페이지에 Recharts 라인차트를 구현한 뒤, (8) 전체 회귀 검증과 docs/ROADMAP.md 갱신을 수행하는 것이다. proxy.ts는 /admin/login만 인증 예외이고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과되며(관리자 role 체크는 Task 008 범위, 이번엔 구현하지 않음), 모든 admin 페이지는 Phase 2 컨벤션에 따라 더미 데이터 조회 함수만 사용한다. 신규 shadcn 프리미티브는 table만 설치하고 페이지네이션은 기존 Button 토글 그룹 패턴을 재사용한다.",
+      "summary": "ui-markup-specialist 에이전트에게 마크업 골격을 위임했다 — app/admin/(dashboard)/events/page.tsx(작업 5)와 동일한 구조·클래스 패턴으로 검색 Input, 역할 필터(전체/일반 사용자/관리자) Button 토글 그룹, Table 7컬럼(이름/이메일/역할 Badge/만든 이벤트 수/참여한 이벤트 수/가입일/작업), 페이지네이션 Button 그룹을 만들었고, event-share-actions.tsx의 DeleteEventDialog를 그대로 복제한 신규 components/delete-user-dialog.tsx(DeleteUserDialog)를 작업 컬럼에 배치했다. useState/필터링 로직은 TODO로 남겨두었다. 이후 오케스트레이터가 searchTerm/roleFilter/page 3개 state를 추가하고, 이름/이메일 부분일치 검색 → role 필터 → 5개씩 페이지네이션 순서로 필터링 체인을 연결했다(Task 5의 이벤트 테이블과 동일한 구조: 검색/필터 변경 시 페이지 1로 리셋, currentPage를 totalPages로 클램프, 결과 0건 시 EmptyState 표시). npm run type-check, npm run lint 모두 통과. 전체 8명에 페이지 크기 5를 적용하면 정확히 2페이지가 나와 에이전트가 정적으로 만들어둔 페이지 버튼 개수와 일치함을 확인했다. /admin/users도 로그인이 필요한 라우트라 브라우저 시각 검증은 수행하지 못했다.",
+      "completedAt": "2026-08-20T06:48:42.473Z"
+    },
+    {
+      "id": "e6d8b47b-e4cc-4da0-a340-5c5cb247e125",
+      "name": "통계 분석 페이지 UI 구현 (Recharts)",
+      "description": "app/admin/(dashboard)/analytics/page.tsx(F015)를 getDummyEventCreationTrend()를 Recharts 라인차트로 시각화하는 페이지로 완성한다.",
+      "notes": "Recharts 컴포넌트는 반드시 Client Component 경계 안에서만 사용 가능하므로 차트 자체를 별도 파일로 분리한다(페이지는 Server Component 유지).",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "c9171cc1-390b-4ec4-b521-690ae25202b6"
+        },
+        {
+          "taskId": "4af498a4-129d-4153-8fdd-8d07e6044c47"
+        }
+      ],
+      "createdAt": "2026-08-20T06:27:39.620Z",
+      "updatedAt": "2026-08-20T06:53:28.657Z",
+      "relatedFiles": [
+        {
+          "path": "app/admin/(dashboard)/analytics/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "getDummyEventCreationTrend 조회 후 차트 컴포넌트 렌더링"
+        },
+        {
+          "path": "components/admin-event-trend-chart.tsx",
+          "type": "CREATE",
+          "description": "Recharts LineChart 클라이언트 컴포넌트"
+        }
+      ],
+      "implementationGuide": "components/admin-event-trend-chart.tsx(신규, \"use client\")를 만들어 recharts의 ResponsiveContainer+LineChart+Line+XAxis+YAxis+Tooltip으로 TimeSeriesPoint[]를 렌더링(day-plane X축=date, Y축=value). app/admin/(dashboard)/analytics/page.tsx는 Server Component로 getDummyEventCreationTrend()를 호출해 이 차트 컴포넌트에 prop으로 전달하고, Card로 감싸 제목(\"일별 이벤트 생성 추이\") 표시.",
+      "verificationCriteria": "/admin/analytics 방문 시 일별 이벤트 생성 추이 라인차트가 정상 렌더링됨(빈 데이터/단일 포인트에서도 에러 없이 표시). npm run type-check, npm run lint 통과.",
+      "analysisResult": "Task 006: 관리자 데스크톱 페이지 UI 완성(docs/ROADMAP.md 99~105번째 줄). 목표는 (1) Recharts와 shadcn table 컴포넌트를 설치하고, (2) 빈 껍데기인 app/admin/login/page.tsx를 실제 로그인 폼(AdminLoginForm, /admin/dashboard로 리다이렉트)으로 완성하며 AdminSidebar에 active state와 기존 LogoutButton을 연동하고, (3) lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델을 추가하고 lib/dummy-data.ts에 getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 조회 함수를 추가하며, (4)~(6) 대시보드/이벤트 관리 테이블/사용자 관리 테이블 페이지를 각각 구현하고, (7) 통계 분석 페이지에 Recharts 라인차트를 구현한 뒤, (8) 전체 회귀 검증과 docs/ROADMAP.md 갱신을 수행하는 것이다. proxy.ts는 /admin/login만 인증 예외이고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과되며(관리자 role 체크는 Task 008 범위, 이번엔 구현하지 않음), 모든 admin 페이지는 Phase 2 컨벤션에 따라 더미 데이터 조회 함수만 사용한다. 신규 shadcn 프리미티브는 table만 설치하고 페이지네이션은 기존 Button 토글 그룹 패턴을 재사용한다.",
+      "summary": "이번 작업은 useState 없이 데이터를 그대로 차트에 전달하는 선언적 구성이라 ui-markup-specialist에게 전체를 위임했다. components/admin-event-trend-chart.tsx(신규, \"use client\")는 h-[300px] 고정 높이 div로 ResponsiveContainer를 감싸(흔한 \"부모 높이 없어 차트 안 보임\" 문제 사전 방지) LineChart+CartesianGrid+XAxis+YAxis+Tooltip+Line을 구성했고, stroke=\"currentColor\"를 text-primary 클래스와 결합해 다크모드 대응까지 처리했다. app/admin/(dashboard)/analytics/page.tsx는 Server Component로 getDummyEventCreationTrend()를 호출해 Card로 감싼 뒤 차트에 props로 전달한다. npm run type-check, npm run lint 모두 통과. /admin/analytics는 로그인 필요 라우트라 직접 접근할 수 없어, proxy.ts가 리다이렉트 예외로 이미 등록해둔 /auth/ 접두사 아래 임시 미리보기 라우트(app/auth/chart-preview-temp/page.tsx)를 만들어 실제 컴포넌트를 렌더링·Playwright로 검증한 뒤 삭제했다: 처음 스크린샷에서는 Recharts의 기본 진입 애니메이션(clipPath 드로잉)으로 선이 안 보였으나, 잠시 후 재촬영하니 2026-08-10에 값 2로 피크를 찍는 곡선과 9개 데이터 포인트가 정확히 렌더링됨을 확인했다(Task 3에서 검증한 getDummyEventCreationTrend() 실제 반환값과 일치). SVG path의 d 속성과 stroke 계산값(rgb(23,23,23))도 evaluate로 직접 확인해 렌더링 실패가 아님을 재차 확인했다.",
+      "completedAt": "2026-08-20T06:53:28.654Z"
+    },
+    {
+      "id": "b8c6c988-0056-488d-aea0-aa591d9bb004",
+      "name": "관리자 페이지 회귀 검증 및 ROADMAP.md 갱신",
+      "description": "Task 006에서 구현한 5개 관리자 페이지(로그인/대시보드/이벤트/사용자/통계)와 사이드바가 함께 정상 동작하는지 검증하고, 전체 빌드 체인(type-check/lint/build)을 통과시킨 뒤 docs/ROADMAP.md의 Task 006 체크박스를 갱신한다.",
+      "notes": "이 작업은 새로운 기능 코드를 추가하지 않고 검증+문서 갱신만 수행한다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "17472c33-896a-45ff-90c3-7c0f63d7b56f"
+        },
+        {
+          "taskId": "90c3cc0d-20d0-4a2e-93c1-2fd0dfb90f41"
+        },
+        {
+          "taskId": "6f3f7cf9-0ad4-4574-9a9d-649d325a6390"
+        },
+        {
+          "taskId": "aefbecc9-2dc0-4afb-8929-553b64cda1d4"
+        },
+        {
+          "taskId": "e6d8b47b-e4cc-4da0-a340-5c5cb247e125"
+        }
+      ],
+      "createdAt": "2026-08-20T06:27:39.620Z",
+      "updatedAt": "2026-08-20T06:59:25.880Z",
+      "relatedFiles": [
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "Task 006 체크박스 및 Phase 2 완료 기준 갱신",
+          "lineStart": 99,
+          "lineEnd": 105
+        }
+      ],
+      "implementationGuide": "1) /admin/login → 로그인 → /admin/dashboard 리다이렉트 → 사이드바로 events/users/analytics 이동하며 active state 확인 → 로그아웃 버튼 동작 확인(가능하면 Playwright MCP로 수행).\n2) npm run type-check && npm run lint && npm run build 순서로 실행해 전체 회귀 확인.\n3) docs/ROADMAP.md 99~105번째 줄 'Task 006' 제목과 하위 6개 항목을 완료(✅)로 표시. Phase 2 완료 기준 체크리스트(254~259번째 줄)는 Task 003(공통 컴포넌트 라이브러리)이 여전히 로드맵상 미완료 표시 상태인지 다시 확인한 뒤, 그 결과에 따라 체크 여부를 결정한다(전부 완료라면 체크, 아니면 Task 005와 동일하게 미체크 유지 + 이유 명시).",
+      "verificationCriteria": "npm run type-check, npm run lint, npm run build 모두 성공. 관리자 5개 페이지 전체 플로우(로그인→대시보드→이벤트→사용자→통계→로그아웃)가 정상 동작. docs/ROADMAP.md의 Task 006 관련 체크박스가 모두 ✅로 표시됨.",
+      "analysisResult": "Task 006: 관리자 데스크톱 페이지 UI 완성(docs/ROADMAP.md 99~105번째 줄). 목표는 (1) Recharts와 shadcn table 컴포넌트를 설치하고, (2) 빈 껍데기인 app/admin/login/page.tsx를 실제 로그인 폼(AdminLoginForm, /admin/dashboard로 리다이렉트)으로 완성하며 AdminSidebar에 active state와 기존 LogoutButton을 연동하고, (3) lib/types/admin.ts에 AdminEventRow/AdminUserRow 뷰모델을 추가하고 lib/dummy-data.ts에 getDummyAdminEventRows/getDummyAdminUserRows/getDummyAdminDashboardMetrics/getDummyEventCreationTrend 조회 함수를 추가하며, (4)~(6) 대시보드/이벤트 관리 테이블/사용자 관리 테이블 페이지를 각각 구현하고, (7) 통계 분석 페이지에 Recharts 라인차트를 구현한 뒤, (8) 전체 회귀 검증과 docs/ROADMAP.md 갱신을 수행하는 것이다. proxy.ts는 /admin/login만 인증 예외이고 나머지 admin 라우트는 일반 로그인 세션만 있으면 통과되며(관리자 role 체크는 Task 008 범위, 이번엔 구현하지 않음), 모든 admin 페이지는 Phase 2 컨벤션에 따라 더미 데이터 조회 함수만 사용한다. 신규 shadcn 프리미티브는 table만 설치하고 페이지네이션은 기존 Button 토글 그룹 패턴을 재사용한다.",
+      "summary": "이 작업은 검증+문서 갱신이라 ui-markup-specialist 위임 대상이 아니어서 직접 수행했다. npm run type-check, npm run lint는 즉시 통과했으나 npm run build에서 실제 회귀를 발견했다: getDummyAdminDashboardMetrics()가 매 호출마다 new Date()를 읽는데, next.config.ts의 cacheComponents 하에서 app/admin/(dashboard)/dashboard/page.tsx가 동적 데이터 접근 표시 없이 이 값을 직접 렌더링해 \"unstable value new Date()\" 프리렌더링 에러로 빌드가 실패했다(Task 4에서는 type-check/lint만 돌렸을 뿐 build를 실행하지 않아 놓쳤던 문제). node_modules/next/dist/docs의 io.md를 확인해 이 프로젝트 버전(v16.3.0)에 맞는 해결책을 찾았다: connection()이 아니라 cacheComponents 하에서 권장되는 next/cache의 io()를 사용해야 함. lib/dummy-data.ts의 getDummyAdminDashboardMetrics를 async로 바꾸고 new Date() 직전에 await io()를 추가했고, app/admin/(dashboard)/dashboard/page.tsx를 DashboardMetricsContent(async)/DashboardMetricsSkeleton으로 분리해 Suspense로 감쌌다(events/[id]/page.tsx와 동일한 기존 패턴). 수정 후 npm run build가 /admin/dashboard를 Partial Prerender(◐)로 성공 처리함을 확인했다. /auth/ 접두사 아래(proxy.ts 인증 예외 경로) 임시 재노출 라우트로 실제 대시보드 컴포넌트를 렌더링해, Task 3에서 검증한 수치(2/4/7/10/0/0/8)와 정확히 일치하는 것을 Playwright로 확인한 뒤 삭제했다. AdminSidebar의 active state/LogoutButton은 로그인 계정이 없어 실제 인증 플로우로는 확인하지 못했지만, bottom-nav.tsx와 동일한 검증된 패턴이라 회귀 위험은 낮다고 판단했다(Task 2에서 이미 코드 검토 완료). docs/ROADMAP.md의 Task 006 항목(99~106번째 줄)을 완료 처리하고 io() 관련 구현 비고를 추가했으며, 기술 스택 체크리스트의 Recharts 항목도 체크했다. Phase 2 완료 기준 체크리스트(254~259번째 줄)는 Task 003이 여전히 로드맵상 미완료 표시라 Task 005와 동일한 이유로 미체크 유지했다.",
+      "completedAt": "2026-08-20T06:59:25.877Z"
     }
   ]
 }
