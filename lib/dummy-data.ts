@@ -319,6 +319,10 @@ export function getDummyEventById(id: string): Event | undefined {
   return DUMMY_EVENTS.find((event) => event.id === id);
 }
 
+export function getDummyEventByInviteCode(inviteCode: string): Event | undefined {
+  return DUMMY_EVENTS.find((event) => event.inviteCode === inviteCode);
+}
+
 function countParticipants(eventId: string): number {
   return DUMMY_EVENT_PARTICIPANTS.filter((participant) => participant.eventId === eventId).length;
 }
